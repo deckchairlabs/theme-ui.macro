@@ -11,29 +11,22 @@ pluginTester({
   },
   tests: [
     {
+      title: 'passed theme object inline',
       code: `
         import transformTheme from '../macro'
         export default transformTheme({
           colors: {
-            primary: 'red',
+            primary: 'red'
           },
           space: [0, 4, 8, 16],
-          buttons: {
-            base: {
-              bg: 'blue',
-              color: 'primary'
-            },
-            primary: {
-              variant: 'buttons.base',
-              padding: [0, 2, 3],
-              margin: '8px',
-              backgroundColor: 'primary',
-              '--custom': 'space.2'
-            },
-            extended: {
-              '@apply': 'buttons.base',
-              padding: 2
-            }
+          stringLiteral: {
+            fontSize: '36px',
+          },
+          scale: {
+            margin: 1,
+          },
+          responsiveScale: {
+            padding: [0, 2]
           }
         })
       `,
@@ -42,25 +35,14 @@ pluginTester({
     primary: 'red',
   },
   space: [0, 4, 8, 16],
-  buttons: {
-    base: {
-      bg: 'blue',
-      color: 'var(--colors-primary)',
-    },
-    primary: {
-      variant: 'buttons.base',
-      padding: ['var(--space-0)', 'var(--space-2)', 'var(--space-3)'],
-      margin: '8px',
-      backgroundColor: 'var(--colors-primary)',
-      '--custom': 'var(--space-2)',
-    },
-    extended: {
-      ...{
-        bg: 'blue',
-        color: 'var(--colors-primary)',
-      },
-      padding: 'var(--space-2)',
-    },
+  stringLiteral: {
+    fontSize: '36px',
+  },
+  scale: {
+    margin: 'var(--space-1)',
+  },
+  responsiveScale: {
+    padding: ['var(--space-0)', 'var(--space-2)'],
   },
 }`,
     },

@@ -35,6 +35,7 @@ function asFunction(
   if (Array.isArray(argumentsPaths)) {
     const themeArgument = argumentsPaths[0]
     const theme: Theme = themeArgument.evaluate().value
+
     const stringified = JSON.stringify(theme)
 
     const declarationNode = babel.template(`var x = ${stringified}`, {
