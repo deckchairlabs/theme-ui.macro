@@ -1,0 +1,4 @@
+{
+  "main": "dist/babel-plugin-theme-ui-macro.cjs.js",
+  "module": "dist/babel-plugin-theme-ui-macro.esm.js"
+}
