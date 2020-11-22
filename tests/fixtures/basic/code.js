@@ -8,3 +8,9 @@ export default transformTheme({
     },
     space: [0, 4, 8, 16, '50%', 0.4]
 })
+
+export const theme = transformTheme({
+    colors: {
+        primary: 'red'
+    }
+})

@@ -1,0 +1,4 @@
+:root {}
+.button-base {
+    padding: var(--space-2)
+}

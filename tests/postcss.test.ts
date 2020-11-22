@@ -1,6 +1,7 @@
 import path from 'path'
 import pluginTester from 'babel-plugin-tester'
 import plugin from 'babel-plugin-macros'
+import postcss from '../src/plugins/postcss'
 
 pluginTester({
   plugin,
@@ -10,5 +11,12 @@ pluginTester({
     presets: ['@babel/preset-typescript'],
     filename: __filename,
   },
-  fixtures: path.join(__dirname, 'fixtures'),
+  pluginOptions: {
+    themeUI: {
+      plugins: [
+        postcss({ output: path.resolve(__dirname, './theme.generated.css') }),
+      ],
+    },
+  },
+  fixtures: path.join(__dirname, 'plugins/postcss'),
 })

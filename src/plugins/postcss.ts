@@ -8,7 +8,12 @@ import {
   notUndefined,
 } from '../utils'
 
-export default function postcss(config: any) {
+type PostCSSPluginConfig = {
+  output: string
+  selectorSeparator?: string
+}
+
+export default function postcss(config: PostCSSPluginConfig) {
   return (expression: Babel.types.ObjectExpression, babel: typeof Babel) => {
     const stylesheet = PostCSS.root()
     const root = PostCSS.rule({ selector: ':root' })
@@ -35,8 +40,12 @@ export default function postcss(config: any) {
                   const propertyKey = getObjectPropertyKey(property)
                   const nodes = objectExpressionToDeclarations(property.value)
 
+                  console.log(selector, propertyKey)
+
                   return PostCSS.rule({
-                    selector: `${selector}-${propertyKey}`,
+                    selector: [selector, propertyKey].join(
+                      config.selectorSeparator || '-'
+                    ),
                     nodes,
                   })
                 }
@@ -50,7 +59,7 @@ export default function postcss(config: any) {
 
     stylesheet.append(rules)
 
-    const result = stylesheet.toResult({ to: 'test.css' })
+    const result = stylesheet.toResult({ to: config.output })
 
     if (result.opts.to) {
       fs.writeFileSync(result.opts.to, result.css)
@@ -66,6 +75,8 @@ function objectExpressionToDeclarations(
       if (Babel.types.isObjectProperty(property)) {
         const propertyKey = getObjectPropertyKey(property)
         const propertyValue = getObjectPropertyValue(property)
+
+        console.log(propertyKey, propertyValue)
 
         if (propertyKey && propertyValue) {
           const prop = camelCaseToKebabCase(propertyKey)
