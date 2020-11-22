@@ -1,7 +1,12 @@
 import * as fs from 'fs'
 import * as Babel from '@babel/core'
 import * as PostCSS from 'postcss'
-import { notUndefined } from '../utils'
+import {
+  camelCaseToKebabCase,
+  getObjectPropertyKey,
+  getObjectPropertyValue,
+  notUndefined,
+} from '../utils'
 
 export default function postcss(config: any) {
   return (expression: Babel.types.ObjectExpression, babel: typeof Babel) => {
@@ -16,27 +21,32 @@ export default function postcss(config: any) {
           babel.types.isObjectProperty(property) &&
           babel.types.isObjectExpression(property.value)
         ) {
-          const selectorProperty = property.value.properties.find(
-            (property) => {
-              return (
-                babel.types.isObjectProperty(property) &&
-                babel.types.isStringLiteral(property.key) &&
-                babel.types.isStringLiteral(property.value) &&
-                property.key.value === '@selector'
-              )
-            }
-          )
+          const selector = property.value.extra?.['@selector'] as
+            | string
+            | undefined
 
-          if (
-            babel.types.isObjectProperty(selectorProperty) &&
-            babel.types.isStringLiteral(selectorProperty.value)
-          ) {
-            const selector = selectorProperty.value.value
-            return PostCSS.rule({ selector })
+          if (selector) {
+            return property.value.properties
+              .map((property) => {
+                if (
+                  babel.types.isObjectProperty(property) &&
+                  babel.types.isObjectExpression(property.value)
+                ) {
+                  const propertyKey = getObjectPropertyKey(property)
+                  const nodes = objectExpressionToDeclarations(property.value)
+
+                  return PostCSS.rule({
+                    selector: `${selector}-${propertyKey}`,
+                    nodes,
+                  })
+                }
+              })
+              .filter(notUndefined)
           }
         }
       })
       .filter(notUndefined)
+      .flat()
 
     stylesheet.append(rules)
 
@@ -46,4 +56,25 @@ export default function postcss(config: any) {
       fs.writeFileSync(result.opts.to, result.css)
     }
   }
+}
+
+function objectExpressionToDeclarations(
+  objectExpression: Babel.types.ObjectExpression
+) {
+  return objectExpression.properties
+    .map((property) => {
+      if (Babel.types.isObjectProperty(property)) {
+        const propertyKey = getObjectPropertyKey(property)
+        const propertyValue = getObjectPropertyValue(property)
+
+        if (propertyKey && propertyValue) {
+          const prop = camelCaseToKebabCase(propertyKey)
+          return PostCSS.decl({
+            prop,
+            value: propertyValue,
+          })
+        }
+      }
+    })
+    .filter(notUndefined)
 }
