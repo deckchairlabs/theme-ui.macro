@@ -2,9 +2,9 @@
 
 This macro is experimental and a work in progress. It aims to provide helpful functionality for developers when creating themes based on the ThemeUI theme spec.
 
-## About
+## ℹ️ About
 
-`theme-ui.macro` babel macro transformations for [ThemeUI theme spec](https://theme-ui.com/theme-spec).
+`theme-ui.macro` babel macro transformations for the [ThemeUI theme spec](https://theme-ui.com/theme-spec).
 
 ## 📦 Install
 
