@@ -36,6 +36,27 @@ export default transformTheme({
     },
   },
 })
+
+↓ ↓ ↓ ↓ ↓ ↓
+
+export default {
+  colors: {
+    primary: 'red',
+    secondary: 'blue',
+  },
+  space: [0, 4, 8, 16],
+  buttons: {
+    base: {
+      paddingX: 'var(--space-2)',
+      paddingY: 'var(--space-3)',
+    },
+    primary: {
+      paddingX: 'var(--space-2)',
+      paddingY: 'var(--space-3)',
+      backgroundColor: 'var(--colors-primary)',
+    },
+  },
+}
 ```
 
 ## ⚙️ Configuration
