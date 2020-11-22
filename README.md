@@ -1,4 +1,4 @@
-# 🧪 Experimental
+# 🧪 theme-ui.macro (Experimental)
 
 This macro is experimental and a work in progress. It aims to provide helpful functionality for developers when creating themes based on the ThemeUI theme spec.
 
