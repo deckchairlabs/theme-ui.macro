@@ -7,10 +7,17 @@ export default transformTheme({
         black: '#000'
     },
     space: [0, 4, 8, 16],
+    layout: {
+        spacing: {
+            large: {
+                margin: 3
+            }
+        },
+    },
     buttons: {
-        '@selector': '.button',
         base: {
-            padding: 2
+            padding: 2,
+            paddingBottom: 3,
         },
         primary: {
             backgroundColor: 'primary'

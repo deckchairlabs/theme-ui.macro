@@ -33,7 +33,8 @@
   "author": "James Edmonds",
   "license": "MIT",
   "dependencies": {
-    "babel-plugin-macros": "^2.8.0"
+    "babel-plugin-macros": "^2.8.0",
+    "postcss-nested": "^5.0.1"
   },
   "peerDependencies": {
     "@theme-ui/css": "^0.4.0-rc.11",

@@ -1,7 +1,19 @@
-:root {}
+:root {
+    --colors-primary: red;
+    --colors-secondary: blue;
+    --colors-black: #000;
+    --space-0: 0px;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 16px
+}
 .button-base {
-    padding: var(--space-2)
+    padding: var(--space-2);
+    padding-bottom: var(--space-3)
 }
 .button-primary {
     background-color: var(--colors-primary)
+}
+.layout-spacing-large {
+    margin: var(--space-3)
 }

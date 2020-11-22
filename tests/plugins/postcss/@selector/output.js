@@ -14,9 +14,17 @@ export default {
     black: '#000',
   },
   space: [0, 4, 8, 16],
+  layout: {
+    spacing: {
+      large: {
+        margin: 'var(--space-3)',
+      },
+    },
+  },
   buttons: {
     base: {
       padding: 'var(--space-2)',
+      paddingBottom: 'var(--space-3)',
     },
     primary: {
       backgroundColor: 'var(--colors-primary)',

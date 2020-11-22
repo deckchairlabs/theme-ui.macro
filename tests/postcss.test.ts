@@ -14,7 +14,10 @@ pluginTester({
   pluginOptions: {
     themeUI: {
       plugins: [
-        postcss({ output: path.resolve(__dirname, './theme.generated.css') }),
+        postcss({
+          selectors: { buttons: '.button', layout: '.layout' },
+          output: path.resolve(__dirname, './theme.generated.css'),
+        }),
       ],
     },
   },
