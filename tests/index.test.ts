@@ -1,5 +1,6 @@
 import pluginTester from 'babel-plugin-tester'
 import plugin from 'babel-plugin-macros'
+import postcss from '../src/plugins/postcss'
 
 pluginTester({
   plugin,
@@ -8,6 +9,11 @@ pluginTester({
   babelOptions: {
     presets: ['@babel/preset-typescript'],
     filename: __filename,
+  },
+  pluginOptions: {
+    themeUI: {
+      plugins: [postcss({ foo: 'bar' })],
+    },
   },
   tests: [
     {
@@ -36,6 +42,12 @@ pluginTester({
           },
           responsiveScale: {
             padding: [0, 2]
+          },
+          buttons: {
+            '@selector': '.button',
+            primary: {
+              backgroundColor: 'primary'
+            }
           }
         })
       `,

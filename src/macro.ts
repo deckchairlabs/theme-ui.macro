@@ -2,6 +2,7 @@ import { createMacro, MacroHandler, MacroError } from 'babel-plugin-macros'
 import * as Babel from '@babel/core'
 import { get, scales, Theme } from '@theme-ui/css'
 import { NodePath, Node } from '@babel/traverse'
+import { notUndefined } from './utils'
 
 const internalProperties = ['variant']
 const rootProperties = ['colors', 'space']
@@ -10,7 +11,7 @@ function shouldSkipProperty(property: string) {
   return [...rootProperties, ...internalProperties].includes(property)
 }
 
-const macroHandler: MacroHandler = ({ references, state, babel }) => {
+const macroHandler: MacroHandler = ({ references, state, babel, config }) => {
   references.default.forEach((referencePath) => {
     if (babel.types.isCallExpression(referencePath.parentPath)) {
       const objectExpression = asFunction(
@@ -25,6 +26,19 @@ const macroHandler: MacroHandler = ({ references, state, babel }) => {
       throw new MacroError()
     }
   })
+
+  // Pass the transformed theme through any plugins
+  if (config && config.plugins && babel.types.isNode(references.default[0])) {
+    const plugins = config.plugins as ((
+      expression: Babel.types.ObjectExpression,
+      babel: typeof Babel
+    ) => void)[]
+
+    if (babel.types.isObjectExpression(references.default[0].parentPath.node)) {
+      const objectExpression = references.default[0].parentPath.node
+      plugins.forEach((plugin) => plugin(objectExpression, babel))
+    }
+  }
 }
 
 function asFunction(
@@ -221,12 +235,6 @@ function transformSpreadObject(
 function toVarValue(property: string | number, scale?: string) {
   const path = getPropertyPath(property, scale)
   return `var(--${path.replace(/\./g, '-')})`
-}
-
-function notUndefined<TValue>(
-  value: TValue | null | undefined
-): value is TValue {
-  return value !== undefined
 }
 
 function getPropertyPath(property: string | number, scale?: string) {

@@ -19,6 +19,7 @@
   "files": [
     "dist/",
     "macro/",
+    "plugins/",
     "package.json",
     "README.md"
   ],
@@ -35,7 +36,8 @@
     "babel-plugin-macros": "^2.8.0"
   },
   "peerDependencies": {
-    "@theme-ui/css": "^0.4.0-rc.11"
+    "@theme-ui/css": "^0.4.0-rc.11",
+    "postcss": "^8.1.9"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.12.1",
@@ -47,6 +49,7 @@
     "@types/babel__traverse": "^7.0.15",
     "babel-plugin-tester": "^10.0.0",
     "jest": "^26.6.1",
+    "postcss": "^8.1.9",
     "ts-jest": "^26.4.3",
     "typescript": "^4.0.5"
   },
@@ -55,7 +58,8 @@
   },
   "preconstruct": {
     "entrypoints": [
-      "macro.ts"
+      "macro.ts",
+      "plugins/postcss.ts"
     ]
   }
 }
