@@ -18,6 +18,7 @@
   },
   "files": [
     "dist/",
+    "macro/",
     "package.json",
     "README.md"
   ],
@@ -51,5 +52,10 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "preconstruct": {
+    "entrypoints": [
+      "macro.ts"
+    ]
   }
 }
