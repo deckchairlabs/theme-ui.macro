@@ -29,38 +29,64 @@ const macroHandler: MacroHandler = ({ references, state, babel }) => {
 
 function asFunction(
   argumentsPaths: NodePath<Node> | NodePath<Node>[],
-  { file: { opts: fileOptions } }: Babel.PluginPass,
+  state: Babel.PluginPass,
   babel: typeof Babel
 ) {
   if (Array.isArray(argumentsPaths)) {
     const themeArgument = argumentsPaths[0]
-    const theme: Theme = themeArgument.evaluate().value
 
-    const stringified = JSON.stringify(theme)
+    if (babel.types.isObjectExpression(themeArgument.node)) {
+      themeArgument.traverse({
+        ObjectProperty: {
+          enter(path) {
+            if (babel.types.isIdentifier(path.node.value)) {
+              const binding = path.scope.getBinding(path.node.value.name)
+              if (binding && babel.types.isVariableDeclarator(binding.path)) {
+                if (
+                  babel.types.isVariableDeclarator(binding.path.node) &&
+                  babel.types.isObjectExpression(binding.path.node.init)
+                ) {
+                  path.replaceWith(
+                    babel.types.objectProperty(
+                      babel.types.identifier(path.node.value.name),
+                      babel.types.objectExpression(
+                        binding.path.node.init.properties
+                      )
+                    )
+                  )
+                  binding.path.remove()
+                }
+              }
+            }
+          },
+        },
+        SpreadElement: {
+          enter(path) {
+            if (babel.types.isIdentifier(path.node.argument)) {
+              const binding = path.scope.getBinding(path.node.argument.name)
 
-    const declarationNode = babel.template(`var x = ${stringified}`, {
-      preserveComments: true,
-      placeholderPattern: false,
-      ...fileOptions.parserOpts,
-      sourceType: 'unambiguous',
-    })()
+              if (binding && babel.types.isVariableDeclarator(binding.path)) {
+                if (
+                  babel.types.isVariableDeclarator(binding.path.node) &&
+                  babel.types.isObjectExpression(binding.path.node.init)
+                ) {
+                  path.replaceWithMultiple(binding.path.node.init.properties)
+                  binding.path.remove()
+                }
+              }
+            }
+          },
+        },
+      })
 
-    if (
-      !Array.isArray(declarationNode) &&
-      babel.types.isVariableDeclaration(declarationNode)
-    ) {
-      const objectDeclaration = declarationNode.declarations[0]
-      const objectExpression = objectDeclaration.init
+      const theme = themeArgument.evaluate().value
+      const transformedTheme = transformObjectExpression(
+        theme,
+        babel,
+        themeArgument.node
+      )
 
-      if (babel.types.isObjectExpression(objectExpression)) {
-        const transformedTheme = transformObjectExpression(
-          theme,
-          babel,
-          objectExpression
-        )
-
-        return transformedTheme
-      }
+      return transformedTheme
     }
   }
 }
@@ -72,9 +98,13 @@ function transformObjectExpression(
 ) {
   objectExpression.properties = objectExpression.properties.map(
     (property, index) => {
+      if (babel.types.isSpreadElement(property)) {
+        console.log(property)
+      }
+
       if (babel.types.isObjectProperty(property)) {
         const propertyKey =
-          babel.types.isStringLiteral(property.key) && property.key.value
+          babel.types.isIdentifier(property.key) && property.key.name
 
         const scaleKey = propertyKey ? get(scales, propertyKey) || null : null
 
@@ -84,7 +114,7 @@ function transformObjectExpression(
 
         if (
           propertyKey === '@apply' &&
-          babel.types.isStringLiteral(property.key) &&
+          babel.types.isIdentifier(property.key) &&
           babel.types.isStringLiteral(property.value)
         ) {
           const applyObjectExpression: Record<

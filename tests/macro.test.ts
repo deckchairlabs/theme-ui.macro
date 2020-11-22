@@ -6,7 +6,7 @@ pluginTester({
   pluginName: 'theme-ui.macro',
   snapshot: false,
   babelOptions: {
-    presets: [['@babel/preset-typescript']],
+    presets: ['@babel/preset-typescript'],
     filename: __filename,
   },
   tests: [
@@ -14,11 +14,20 @@ pluginTester({
       title: 'passed theme object inline',
       code: `
         import transformTheme from '../macro'
+        const fonts = {
+          body: 'system-ui, sans-serif',
+          heading: 'system-ui, sans-serif',
+          monospace: 'Menlo, monospace',
+        }
+        const scale = {
+          space: [0, 4, 8, 16]
+        }
         export default transformTheme({
           colors: {
             primary: 'red'
           },
-          space: [0, 4, 8, 16],
+          ...scale,
+          fonts,
           stringLiteral: {
             fontSize: '36px',
           },
@@ -35,6 +44,11 @@ pluginTester({
     primary: 'red',
   },
   space: [0, 4, 8, 16],
+  fonts: {
+    body: 'system-ui, sans-serif',
+    heading: 'system-ui, sans-serif',
+    monospace: 'Menlo, monospace',
+  },
   stringLiteral: {
     fontSize: '36px',
   },
