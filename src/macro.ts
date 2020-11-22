@@ -58,19 +58,7 @@ function asFunction(
       themeArgument.traverse({
         ObjectProperty: {
           enter(path) {
-            if (
-              babel.types.isStringLiteral(path.node.key) &&
-              babel.types.isStringLiteral(path.node.value) &&
-              path.node.key.value === '@selector'
-            ) {
-              // Save the selector to the parent extra property
-              path.parentPath.node.extra = {
-                ...path.parentPath.node.extra,
-                [path.node.key.value]: path.node.value.value,
-              }
-              // Remove the current objectProperty ie: "@selector"
-              path.remove()
-            } else if (babel.types.isIdentifier(path.node.value)) {
+            if (babel.types.isIdentifier(path.node.value)) {
               const binding = path.scope.getBinding(path.node.value.name)
               if (binding && babel.types.isVariableDeclarator(binding.path)) {
                 if (

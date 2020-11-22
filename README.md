@@ -97,7 +97,6 @@ export default transformTheme({
   },
   space: [0, 4, 8, 16],
   buttons: {
-    '@selector': '.button',
     base: {
       padding: 2,
     },
@@ -117,6 +116,9 @@ module.exports = {
   themeUI: {
     plugins: [
       postcss({
+        selectors: {
+          buttons: '.button',
+        },
         output: './path/to/generated/stylesheet.css',
       }),
     ],
