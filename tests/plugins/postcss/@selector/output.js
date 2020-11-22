@@ -18,5 +18,8 @@ export default {
     base: {
       padding: 'var(--space-2)',
     },
+    primary: {
+      backgroundColor: 'var(--colors-primary)',
+    },
   },
 }

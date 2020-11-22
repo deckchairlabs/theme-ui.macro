@@ -2,3 +2,6 @@
 .button-base {
     padding: var(--space-2)
 }
+.button-primary {
+    background-color: var(--colors-primary)
+}

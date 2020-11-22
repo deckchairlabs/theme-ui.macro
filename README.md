@@ -124,6 +124,8 @@ module.exports = {
 
 Should result in a css file being generated like the below.
 
+#### **`./path/to/generated/stylesheet.css`**
+
 ```css
 :root {
   --colors-primary: red;

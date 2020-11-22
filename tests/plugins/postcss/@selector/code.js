@@ -11,6 +11,9 @@ export default transformTheme({
         '@selector': '.button',
         base: {
             padding: 2
+        },
+        primary: {
+            backgroundColor: 'primary'
         }
     }
 })
