@@ -1,201 +1,238 @@
-import { scales } from '@theme-ui/css';
-import micromatch from 'micromatch';
-import { toVarValue } from './var-names';
+import { createMacro, MacroHandler, MacroError } from 'babel-plugin-macros'
+import * as Babel from '@babel/core'
+import { get, scales, Theme } from '@theme-ui/css'
+import { NodePath, Node } from '@babel/traverse'
 
-type Value = {
-  __value: string | string[] | object | number | number[];
-  scale?: string;
-  __path: any
+const internalProperties = ['variant']
+const rootProperties = ['colors', 'space']
+
+function shouldSkipProperty(property: string) {
+  return [...rootProperties, ...internalProperties].includes(property)
 }
 
-
-type Tree = { __parent: Tree | undefined } & (Partial<Value> | { [key: string]: Tree });
-
-const findPath = (fullTree: Tree, currentNode: Tree, value: string | string[]) : Value | undefined => {
-  const seg = typeof value === 'string' ? value.split('.') : undefined;
-  if (seg && seg.length > 0) {
-    const findSeg = (tree: Tree): Value | undefined =>  seg.reduce((t: Tree, s: string | number ) => {
-      if (!t) {
-        return undefined;
+const macroHandler: MacroHandler = ({ references, state, babel }) => {
+  references.default.forEach((referencePath) => {
+    if (babel.types.isCallExpression(referencePath.parentPath)) {
+      const objectExpression = asFunction(
+        referencePath.parentPath.get('arguments'),
+        state,
+        babel
+      )
+      if (objectExpression) {
+        referencePath.parentPath.replaceWith(objectExpression)
       }
-      return t ? Array.isArray(t.__value) ? 
-        { __path: t.__path, __value: t.__value[s] } :
-          t[s]:
-           undefined;
-    }, tree );
-    const retVal: Value | undefined = findSeg(fullTree) || findSeg(currentNode);
-    seg.pop();
-    return retVal ? { ...retVal, scale: seg.join('.') } : retVal;
-  }
-  return undefined;
-}
-
-type TransformProps = {
-  fullTree: Tree;
-  parentKey?: string;
-  current: Tree;
-} & PluginOptions
-
-interface PluginOptions { 
-  useCustomProperties?: boolean;
-  rootNames?: string[];
-  colorNames?: string[];
-  transformNativeColors?: boolean;
-  spaceFormats?: Record<string, string | ((value: any) => string)> 
-}
-
-const transformValue = (spaceFormats: PluginOptions['spaceFormats'], key: string, value: any) => {
-  if (spaceFormats[key]) {
-    const formatter = spaceFormats[key];
-    if (typeof formatter === 'function') {
-      return (formatter as (value: any) => string)(value)
     } else {
-      return formatter;
-    }
-  }
-  return value;
-}
-
-const transformTree = (props: TransformProps) => {
-  const { useCustomProperties, fullTree, parentKey, current, rootNames, colorNames, spaceFormats } = props;
-  Object.keys(current).filter(key => !['__parent', '__path', '__value'].includes(key)).forEach(key => {
-    const item = current[key];
-    if ('__parent' in item) {
-      transformTree({...props, parentKey: key, current: item });
-    } else if ('__path' in item) {
-      let lookup: Value;
-      if (Array.isArray(item.__value)) {
-        const items = item.__value.map(v => findPath(fullTree, current, v));
-        if (items && items.length) {
-          lookup = { __path: item.__path, __value: items}
-        }
-      } else {
-        if (micromatch.isMatch(key, colorNames) && fullTree['colors']?.[item.__value]) {
-          if (rootNames.includes(parentKey)) {
-            item.__path.node.value.value = item.__value;
-          } 
-          else if (useCustomProperties){ 
-            item.__path.node.value.value = toVarValue(item.__value);
-          } else {
-            item.__path.node.value.value = fullTree['colors']?.[item.__value].__value;
-          };         
-        } else {
-          lookup = findPath(fullTree, current, item.__value);
-        }
-      }   
-      
-      if (lookup) {
-        const { __value, __path, scale } = lookup;
-        switch (typeof __value) {
-          case 'object':
-            if (!Array.isArray(__value)) {
-              item.__path.node.value = transformValue(spaceFormats, scale, __path.node.value);
-            } else {
-              item.__path.node.value.elements = item.__path.node.value.elements.map((e, idx) => ({
-                ...e, value: __value[idx] !== undefined ? transformValue(spaceFormats, scale, (__value[idx] as unknown as Value).__value) : transformValue(spaceFormats, scale, e.value),
-                  
-                }));
-            }
-            break;
-          case 'string':
-          case 'number':
-            item.__path.node.value.value = transformValue(spaceFormats, scale, __value );
-            break;
-        }
-      }
+      throw new MacroError()
     }
   })
 }
 
-const nativeColorNames = Object.keys(scales).filter(key => scales[key] === 'colors');
-nativeColorNames.push('bg');
+function asFunction(
+  argumentsPaths: NodePath<Node> | NodePath<Node>[],
+  state: Babel.PluginPass,
+  babel: typeof Babel
+) {
+  if (Array.isArray(argumentsPaths)) {
+    const themeArgument = argumentsPaths[0]
 
-export default (_: any, options: PluginOptions) => {
-  const { 
-    useCustomProperties: customProps = true,
-    transformNativeColors = false,
-    colorNames: customColorNames = [],
-    rootNames = ['root', 'colors'],
-    spaceFormats = {
-      space: value => `"${value}px"`,
-    }
-   } = options;  
-  let tree: Tree = {
-    __parent: undefined,
-  };
-  const colorNames = transformNativeColors ? [...customColorNames, ...nativeColorNames] : customColorNames;
-  let current: Tree = tree;
-  let useCustomProperties: boolean = customProps;
-  const ThemeDefinition = {
-    enter() {
-      tree = {
-        __parent: undefined,
-      };
-      current = tree;
-    },
-    exit() {
-      transformTree({
-        fullTree: tree, 
-        current: tree,
-        rootNames,
-        colorNames,
-        useCustomProperties,
-        transformNativeColors,
-        spaceFormats,
-      });
-    }    
-  };
-  return {
-    name: 'theme-ui parser',
-    visitor: {
-      ObjectProperty: {
-        enter(path) {
-          const node = path.node;
-          if (node.value) {
-            switch(node.value.type) {
-              case 'StringLiteral':
-                current[node.key.name ?? node.key.value] = {
-                  __value: node.value.value,
-                  __path: path, 
-                };
-                break;
-              case 'ArrayExpression':
-                current[node.key.name ?? node.key.value] = {
-                  __value: node.value.elements.map(el => el.value),
-                  __path: path, 
-                };
-              break;
-              case 'ObjectExpression':
-                current[node.key.name ?? node.key.value] = {
-                  __parent: current,
-                  __value: {},
-                  __path: path,
+    if (babel.types.isObjectExpression(themeArgument.node)) {
+      themeArgument.traverse({
+        ObjectProperty: {
+          enter(path) {
+            if (babel.types.isIdentifier(path.node.value)) {
+              const binding = path.scope.getBinding(path.node.value.name)
+              if (binding && babel.types.isVariableDeclarator(binding.path)) {
+                if (
+                  babel.types.isVariableDeclarator(binding.path.node) &&
+                  babel.types.isObjectExpression(binding.path.node.init)
+                ) {
+                  path.replaceWith(
+                    babel.types.objectProperty(
+                      babel.types.identifier(path.node.value.name),
+                      babel.types.objectExpression(
+                        binding.path.node.init.properties
+                      )
+                    )
+                  )
+                  binding.path.remove()
                 }
-                current = current[node.key.name ?? node.key.value];
-                break;
-              case 'BooleanLiteral': 
-                if (node.key.name === 'useCustomProperties') {
-                  useCustomProperties = node.value.value;
-                };
-              break;
+              }
             }
-          }
+          },
         },
-        exit(path) {
-          const node = path.node;
-          if (node.value) {
-            switch (node.value.type) {
-              case 'ObjectExpression': 
-                if (current.__parent) {
-                  current = current.__parent as Tree;
+        SpreadElement: {
+          enter(path) {
+            if (babel.types.isIdentifier(path.node.argument)) {
+              const binding = path.scope.getBinding(path.node.argument.name)
+
+              if (binding && babel.types.isVariableDeclarator(binding.path)) {
+                if (
+                  babel.types.isVariableDeclarator(binding.path.node) &&
+                  babel.types.isObjectExpression(binding.path.node.init)
+                ) {
+                  path.replaceWithMultiple(binding.path.node.init.properties)
+                  binding.path.remove()
                 }
-                break;
+              }
             }
-          }  
-        }  
-      },
-      ExportDefaultDeclaration: ThemeDefinition,
-      VariableDeclaration:  ThemeDefinition,
+          },
+        },
+      })
+
+      const theme = themeArgument.evaluate().value
+      const transformedTheme = transformObjectExpression(
+        theme,
+        babel,
+        themeArgument.node
+      )
+
+      return transformedTheme
     }
-  };
+  }
 }
+
+function transformObjectExpression(
+  theme: Theme,
+  babel: typeof Babel,
+  objectExpression: Babel.types.ObjectExpression
+) {
+  objectExpression.properties = objectExpression.properties.map(
+    (property, index) => {
+      if (babel.types.isSpreadElement(property)) {
+        console.log(property)
+      }
+
+      if (babel.types.isObjectProperty(property)) {
+        const propertyKey =
+          babel.types.isIdentifier(property.key) && property.key.name
+
+        const scaleKey = propertyKey ? get(scales, propertyKey) || null : null
+
+        if (propertyKey && shouldSkipProperty(propertyKey)) {
+          return property
+        }
+
+        if (
+          propertyKey === '@apply' &&
+          babel.types.isIdentifier(property.key) &&
+          babel.types.isStringLiteral(property.value)
+        ) {
+          const applyObjectExpression: Record<
+            string,
+            string | number | string[] | number[]
+          > = get(theme, property.value.value)
+
+          return transformSpreadObject(theme, babel, applyObjectExpression)
+        }
+
+        switch (property.value.type) {
+          case 'StringLiteral':
+          case 'NumericLiteral':
+            const propertyValue = String(property.value.value)
+            const isThemeToken =
+              get(theme, getPropertyPath(propertyValue, scaleKey)) !== undefined
+
+            if (isThemeToken) {
+              property.value = babel.types.stringLiteral(
+                toVarValue(propertyValue, scaleKey)
+              )
+            }
+            break
+          case 'ArrayExpression':
+            property.value = babel.types.arrayExpression(
+              transformArrayExpression(babel, property.value, scaleKey)
+            )
+            break
+          case 'ObjectExpression':
+            property.value = transformObjectExpression(
+              theme,
+              babel,
+              property.value
+            )
+            break
+        }
+      }
+      return property
+    }
+  )
+
+  return objectExpression
+}
+
+function transformArrayExpression(
+  babel: typeof Babel,
+  arrayExpression: Babel.types.ArrayExpression,
+  scaleKey?: string
+) {
+  return arrayExpression.elements.map((element) => {
+    if (
+      babel.types.isStringLiteral(element) ||
+      babel.types.isNumericLiteral(element)
+    ) {
+      return babel.types.stringLiteral(
+        toVarValue(String(element.value), scaleKey)
+      )
+    }
+
+    return element
+  })
+}
+
+function transformSpreadObject(
+  theme: Theme,
+  babel: typeof Babel,
+  object: Record<string, string | number | string[] | number[]>
+) {
+  function primitiveToBabelExpression(
+    primitive: string | number | any[]
+  ): Babel.types.Expression {
+    if (Array.isArray(primitive)) {
+      return babel.types.arrayExpression(
+        primitive.map(primitiveToBabelExpression)
+      )
+    }
+    return typeof primitive === 'string'
+      ? babel.types.stringLiteral(primitive)
+      : babel.types.numericLiteral(primitive)
+  }
+
+  const properties = Object.entries(object)
+    .map(([identifier, value]) => {
+      const valueExpression = primitiveToBabelExpression(value)
+
+      if (valueExpression) {
+        return babel.types.objectProperty(
+          babel.types.stringLiteral(identifier),
+          valueExpression
+        )
+      }
+    })
+    .filter(notUndefined)
+
+  return babel.types.spreadElement(
+    transformObjectExpression(
+      theme,
+      babel,
+      babel.types.objectExpression(properties)
+    )
+  )
+}
+
+function toVarValue(property: string | number, scale?: string) {
+  const path = getPropertyPath(property, scale)
+  return `var(--${path.replace(/\./g, '-')})`
+}
+
+function notUndefined<TValue>(
+  value: TValue | null | undefined
+): value is TValue {
+  return value !== undefined
+}
+
+function getPropertyPath(property: string | number, scale?: string) {
+  return [scale, property].filter(Boolean).join('.')
+}
+
+export default createMacro(macroHandler, {
+  configName: 'themeUI',
+})

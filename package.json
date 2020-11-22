@@ -1,24 +1,23 @@
 {
-  "name": "babel-plugin-theme-ui",
-  "version": "0.6.0",
-  "description": "Babel plugin parsing theme keys for theme-ui",
-  "main": "dist/babel-plugin-theme-ui.cjs.js",
-  "module": "dist/babel-plugin-theme-ui.esm.js",
+  "name": "theme-ui.macro",
+  "version": "0.1.0",
+  "description": "Babel macro parsing theme keys for theme-ui",
+  "main": "dist/theme-ui.macro.cjs.js",
+  "module": "dist/theme-ui.macro.esm.js",
   "keywords": [
     "babel",
     "theme-ui",
     "react",
     "theme"
   ],
-  "homepage": "https://github.com/atanasster/babel-plugin-theme-ui",
-  "bugs": "https://github.com/atanasster/babel-plugin-theme-ui/issues",
+  "homepage": "https://github.com/deckchairlabs/theme-ui.macro",
+  "bugs": "https://github.com/deckchairlabs/theme-ui.macro/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/atanasster/babel-plugin-theme-ui.git"
+    "url": "https://github.com/deckchairlabs/theme-ui.macro.git"
   },
   "files": [
     "dist/",
-    "macro/",
     "package.json",
     "README.md"
   ],
@@ -29,11 +28,10 @@
     "test": "yarn jest",
     "postinstall": "preconstruct dev"
   },
-  "author": "Atanas Stoyanov",
+  "author": "James Edmonds",
   "license": "MIT",
   "dependencies": {
-    "babel-plugin-macros": "^2.8.0",
-    "micromatch": "^4.0.2"
+    "babel-plugin-macros": "^2.8.0"
   },
   "peerDependencies": {
     "@theme-ui/css": "^0.4.0-rc.11"
@@ -46,7 +44,6 @@
     "@types/babel-plugin-macros": "^2.8.4",
     "@types/babel__core": "^7.1.12",
     "@types/babel__traverse": "^7.0.15",
-    "@types/micromatch": "^4.0.1",
     "babel-plugin-tester": "^10.0.0",
     "jest": "^26.6.1",
     "ts-jest": "^26.4.3",
@@ -54,11 +51,5 @@
   },
   "publishConfig": {
     "access": "public"
-  },
-  "preconstruct": {
-    "entrypoints": [
-      "index.ts",
-      "macro.ts"
-    ]
   }
 }
