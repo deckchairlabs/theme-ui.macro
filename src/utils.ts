@@ -1,4 +1,10 @@
-import * as Babel from '@babel/core'
+import {
+  isStringLiteral,
+  isIdentifier,
+  Expression,
+  SpreadElement,
+  ObjectProperty,
+} from '@babel/types'
 
 export function notUndefined<TValue>(
   value: TValue | null | undefined
@@ -6,20 +12,32 @@ export function notUndefined<TValue>(
   return value !== undefined
 }
 
-export function getObjectPropertyKey(property: Babel.types.ObjectProperty) {
-  return Babel.types.isStringLiteral(property.key)
+export function toCustomPropertyValue(
+  property: string | number,
+  scale?: string
+) {
+  const path = getPropertyPath(property, scale)
+  return `var(--${path.replace(/\./g, '-')})`
+}
+
+export function getPropertyPath(property: string | number, scale?: string) {
+  return [scale, property].filter(Boolean).join('.')
+}
+
+export function getObjectPropertyKey(property: ObjectProperty) {
+  return isStringLiteral(property.key)
     ? property.key.value
-    : Babel.types.isIdentifier(property.key)
+    : isIdentifier(property.key)
     ? property.key.name
     : false
 }
 
-export function getObjectPropertyValue(property: Babel.types.ObjectProperty) {
-  return Babel.types.isStringLiteral(property.value) && property.value.value
+export function getObjectPropertyValue(property: ObjectProperty) {
+  return isStringLiteral(property.value) && property.value.value
 }
 
 export function expressionToCssValue(
-  expression: Babel.types.Expression | Babel.types.SpreadElement | null
+  expression: Expression | SpreadElement | null
 ) {
   if (!expression) {
     return expression
