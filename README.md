@@ -23,12 +23,18 @@ yarn add theme-ui.macro --dev
 ```js
 import transformTheme from 'theme-ui.macro'
 
+const colors = {
+  primary: 'red',
+  secondary: 'blue',
+}
+
+const scales = {
+  space: [0, 4, 8, 16]
+}
+
 export default transformTheme({
-  colors: {
-    primary: 'red',
-    secondary: 'blue',
-  },
-  space: [0, 4, 8, 16],
+  colors,
+  ...space,
   buttons: {
     base: {
       paddingX: 3,
@@ -41,7 +47,7 @@ export default transformTheme({
   },
 })
 
-↓ ↓ ↓ ↓ ↓ ↓
+↓ ↓ ↓ ↓ ↓ ↓ result ↓ ↓ ↓ ↓ ↓ ↓
 
 export default {
   colors: {
