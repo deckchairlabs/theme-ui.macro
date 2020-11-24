@@ -7,6 +7,9 @@ export default transformTheme({
         black: '#000',
         dark: {
             primary: 'white'
+        },
+        light: {
+            primary: 'black'
         }
     },
     space: [0, 4, 8, 16],

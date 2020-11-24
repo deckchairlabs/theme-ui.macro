@@ -1,25 +1,11 @@
-:root {
-    --colors-primary: red;
-    --colors-secondary: blue;
-    --colors-black: #000;
-    --colors-dark-primary: white;
-    --space-0: 0px;
-    --space-1: 4px;
-    --space-2: 8px;
-    --space-3: 16px;
-    --borderWidths-0: 0px;
-    --borderWidths-1: 1px;
-    --borderWidths-2: 2px
-}
 .button-base {
-    padding: var(--space-3);
-    padding-left: var(--space-2);
-    padding-right: var(--space-2);
-    border-width: var(--borderWidths-1)
+    padding: 16px;
+    padding-left: 8px;
+    padding-right: 8px
 }
 .button-primary {
-    background-color: var(--colors-primary)
+    background-color: red
 }
 .layout-spacing-large {
-    margin: var(--space-3)
+    margin: 16px
 }

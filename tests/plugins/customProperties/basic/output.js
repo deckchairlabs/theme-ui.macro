@@ -4,6 +4,7 @@ export default {
     '--colors-secondary': 'blue',
     '--colors-black': '#000',
     '--colors-dark-primary': 'white',
+    '--colors-light-primary': 'black',
     '--space-0': '0px',
     '--space-1': '4px',
     '--space-2': '8px',
@@ -18,6 +19,9 @@ export default {
     black: 'var(--colors-black)',
     dark: {
       primary: 'var(--colors-dark-primary)',
+    },
+    light: {
+      primary: 'var(--colors-light-primary)',
     },
   },
   space: [
@@ -34,18 +38,18 @@ export default {
   layout: {
     spacing: {
       large: {
-        margin: 'var(--space-3)',
+        margin: 3,
       },
     },
   },
   buttons: {
     base: {
       p: 3,
-      paddingX: 'var(--space-2)',
-      borderWidth: 'var(--borderWidths-1)',
+      paddingX: 2,
+      borderWidth: 1,
     },
     primary: {
-      backgroundColor: 'var(--colors-primary)',
+      backgroundColor: 'primary',
     },
   },
 }

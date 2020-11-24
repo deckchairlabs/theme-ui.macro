@@ -1,4 +1,4 @@
-import transformTheme from '../../../macro'
+import transformTheme from '../../../../macro'
 
 export default transformTheme({
     colors: {

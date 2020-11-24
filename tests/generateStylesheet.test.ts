@@ -21,5 +21,5 @@ pluginTester({
       ],
     },
   },
-  fixtures: path.join(__dirname, 'plugins'),
+  fixtures: path.join(__dirname, 'plugins/generateStylesheet'),
 })

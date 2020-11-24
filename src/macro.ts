@@ -48,15 +48,15 @@ const macroHandler: MacroHandler = ({
       const transformedTheme = asFunction(callArguments[0])
 
       if (transformedTheme) {
-        // Replace the path to the macro call expression with the final object expression
+        // Replace the path to the macro call expression with the transformedTheme object expression
         referencePath.parentPath.replaceWith(transformedTheme)
         const evaluatedTheme = referencePath.parentPath.evaluate()
 
         // Pass the transformed theme through any provided plugins
         if (evaluatedTheme.confident && config?.plugins) {
+          const theme = evaluatedTheme.value as Theme
+
           config.plugins.forEach((plugin) => {
-            // We re-evaulate the theme for each plugin as plugins are allowed to modify it
-            const theme = referencePath.parentPath.evaluate().value as Theme
             plugin(referencePath.parentPath, theme, babel)
           })
         } else if (!evaluatedTheme.confident) {

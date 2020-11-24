@@ -89,29 +89,6 @@ export default function CustomPropertiesPlugin(
       },
     })
 
-    const reevaluatedTheme = path.evaluate().value
-
-    path.traverse({
-      ObjectProperty: {
-        enter(nodePath) {
-          if (babel.types.isIdentifier(nodePath.node.key)) {
-            const propertyKey = nodePath.node.key.name
-            const scaleName = scales[propertyKey as keyof typeof scales]
-            if (
-              scaleName &&
-              (babel.types.isStringLiteral(nodePath.node.value) ||
-                babel.types.isNumericLiteral(nodePath.node.value))
-            ) {
-              const themeKey = [scaleName, nodePath.node.value.value].join('.')
-              nodePath.node.value = babel.types.stringLiteral(
-                get(reevaluatedTheme, themeKey)
-              )
-            }
-          }
-        },
-      },
-    })
-
     if (babel.types.isObjectExpression(path.node)) {
       path.node.properties.unshift(
         babel.types.objectProperty(
