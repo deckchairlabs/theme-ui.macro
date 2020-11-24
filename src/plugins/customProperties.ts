@@ -43,10 +43,9 @@ export default function CustomPropertiesPlugin(
                       nodePath.node.key.name,
                     ]
 
-                    const propertyIdentifier = `--${[
-                      prefix,
-                      ...propertyPath,
-                    ].join('-')}`
+                    const propertyIdentifier = `--${[prefix, ...propertyPath]
+                      .filter(Boolean)
+                      .join('-')}`
                     const propertyValue = `var(${propertyIdentifier})`
 
                     customProperties.push(
