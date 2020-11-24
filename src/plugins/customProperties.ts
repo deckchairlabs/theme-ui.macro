@@ -11,6 +11,10 @@ function onlyUnique(value: any, index: number, self: any[]) {
   return self.indexOf(value) === index
 }
 
+function getCustomPropertyIdentifier(path: string[], prefix?: string) {
+  return `--${[prefix, ...path].filter(Boolean).join('-')}`
+}
+
 export default function CustomPropertiesPlugin(
   config?: CustomPropertiesPluginConfig
 ): Plugin {
@@ -43,9 +47,10 @@ export default function CustomPropertiesPlugin(
                       nodePath.node.key.name,
                     ]
 
-                    const propertyIdentifier = `--${[prefix, ...propertyPath]
-                      .filter(Boolean)
-                      .join('-')}`
+                    const propertyIdentifier = getCustomPropertyIdentifier(
+                      propertyPath,
+                      prefix
+                    )
                     const propertyValue = `var(${propertyIdentifier})`
 
                     customProperties.push(
@@ -70,7 +75,10 @@ export default function CustomPropertiesPlugin(
                         String(index),
                       ]
 
-                      const propertyIdentifier = `--${propertyPath.join('-')}`
+                      const propertyIdentifier = getCustomPropertyIdentifier(
+                        propertyPath,
+                        prefix
+                      )
                       const themeValue = get(theme, propertyPath.join('.'))
                       const propertyValue = primitiveToCssValue(themeValue)
 
