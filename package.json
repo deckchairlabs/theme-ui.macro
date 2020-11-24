@@ -62,7 +62,8 @@
   "preconstruct": {
     "entrypoints": [
       "macro.ts",
-      "plugins/postcss.ts"
+      "plugins/generateStylesheet.ts",
+      "plugins/customProperties.ts"
     ]
   }
 }

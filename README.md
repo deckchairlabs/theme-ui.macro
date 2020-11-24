@@ -51,13 +51,13 @@ export default {
   space: [0, 4, 8, 16],
   buttons: {
     base: {
-      paddingX: 'var(--space-2)',
-      paddingY: 'var(--space-3)',
+      paddingX: 3,
+      paddingY: 2,
     },
     primary: {
-      paddingX: 'var(--space-2)',
-      paddingY: 'var(--space-3)',
-      backgroundColor: 'var(--colors-primary)',
+      paddingX: 3,
+      paddingY: 2,
+      backgroundColor: 'primary',
     },
   },
 }
@@ -81,7 +81,86 @@ module.exports = {
 
 ## 🔌 Plugins
 
-### postcss
+### CustomProperties
+
+Turns theme tokens into css custom property declarations and make replacements where neccesary.
+
+#### **`babel-plugin-macros.config.js`**
+
+```js
+const customProperties = require('theme-ui.macro/plugins/customProperties')
+
+module.exports = {
+  themeUI: {
+    plugins: [customProperties()],
+  },
+}
+```
+
+#### **`./theme.ts`**
+
+```js
+import transformTheme from 'theme-ui.macro'
+
+export default transformTheme({
+  colors: {
+    primary: 'red',
+    secondary: 'blue',
+    dark: {
+      primary: 'white'
+    }
+  },
+  space: [0, 4, 8, 16],
+  buttons: {
+    base: {
+      padding: 2,
+    },
+    primary: {
+      backgroundColor: 'primary',
+    },
+  },
+})
+
+↓ ↓ ↓ ↓ ↓ ↓ result ↓ ↓ ↓ ↓ ↓ ↓
+
+export default {
+  ':custom-properties': {
+    '--colors-primary': 'red',
+    '--colors-secondary': 'blue',
+    '--colors-dark-primary': 'white',
+    '--space-0': '0px',
+    '--space-1': '4px',
+    '--space-2': '8px',
+    '--space-3': '16px',
+  },
+  colors: {
+    primary: 'var(--colors-primary)',
+    secondary: 'var(--colors-secondary)',
+    dark: {
+      primary: 'var(--colors-dark-primary)',
+    },
+  },
+  space: [
+    'var(--space-0)',
+    'var(--space-1)',
+    'var(--space-2)',
+    'var(--space-3)',
+  ],
+  buttons: {
+    base: {
+      paddingX: 3,
+      paddingY: 2,
+    },
+    primary: {
+      paddingX: 3,
+      paddingY: 2,
+      backgroundColor: 'primary',
+    },
+  },
+}
+```
+
+### GenerateStylesheet
 
 Generate a stylesheet from the transformed theme.
 
@@ -110,12 +189,12 @@ export default transformTheme({
 #### **`babel-plugin-macros.config.js`**
 
 ```js
-const postcss = require('theme-ui.macro/plugins/postcss')
+const generateStylesheet = require('theme-ui.macro/plugins/generateStylesheet')
 
 module.exports = {
   themeUI: {
     plugins: [
-      postcss({
+      generateStylesheet({
         selectors: {
           buttons: '.button',
         },
@@ -131,20 +210,11 @@ Should result in a css file being generated like the below.
 #### **`./path/to/generated/stylesheet.css`**
 
 ```css
-:root {
-  --colors-primary: red;
-  --colors-secondary: blue;
-  --space-0: 0px;
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 16px;
-}
-
 .button-base {
-  padding: var(--space-2);
+  padding: 8px;
 }
 
 .button-primary {
-  background-color: var(--colors-primary);
+  background-color: red;
 }
 ```
