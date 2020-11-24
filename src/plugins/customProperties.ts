@@ -3,7 +3,9 @@ import { Theme, get, scales } from '@theme-ui/css'
 import { Plugin } from '../types'
 import { primitiveToCssValue } from '../utils'
 
-type CustomPropertiesPluginConfig = {}
+type CustomPropertiesPluginConfig = {
+  prefix?: string
+}
 
 function onlyUnique(value: any, index: number, self: any[]) {
   return self.indexOf(value) === index
@@ -12,6 +14,7 @@ function onlyUnique(value: any, index: number, self: any[]) {
 export default function CustomPropertiesPlugin(
   config?: CustomPropertiesPluginConfig
 ): Plugin {
+  const { prefix = '' } = config || {}
   return (
     path: Babel.NodePath<Babel.Node>,
     theme: Theme,
@@ -40,7 +43,10 @@ export default function CustomPropertiesPlugin(
                       nodePath.node.key.name,
                     ]
 
-                    const propertyIdentifier = `--${propertyPath.join('-')}`
+                    const propertyIdentifier = `--${[
+                      prefix,
+                      ...propertyPath,
+                    ].join('-')}`
                     const propertyValue = `var(${propertyIdentifier})`
 
                     customProperties.push(
