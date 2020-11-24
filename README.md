@@ -209,6 +209,28 @@ module.exports = {
     ],
   },
 }
+
+/**
+ * If you use this plugin in addition to the CustomProperties plugin,
+ * placing it after that plugin will add the custom properties
+ * to your generated stylesheet.
+ */
+const customProperties = require('theme-ui.macro/plugins/customProperties')
+const generateStylesheet = require('theme-ui.macro/plugins/generateStylesheet')
+
+module.exports = {
+  themeUI: {
+    plugins: [
+      customProperties(),
+      generateStylesheet({
+        selectors: {
+          buttons: '.button',
+        },
+        output: './path/to/generated/stylesheet.css',
+      }),
+    ],
+  },
+}
 ```
 
 Should result in a css file being generated like the below.
@@ -222,5 +244,25 @@ Should result in a css file being generated like the below.
 
 .button-primary {
   background-color: red;
+}
+
+/**
+ * With the CustomProperties plugin
+ */
+:root {
+  --colors-primary: red;
+  --colors-secondary: blue;
+  --space-0: 0px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+}
+
+.button-base {
+  padding: var(--space-2);
+}
+
+.button-primary {
+  background-color: var(--colors-primary);
 }
 ```
