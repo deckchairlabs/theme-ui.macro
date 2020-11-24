@@ -4,9 +4,13 @@ export default transformTheme({
     colors: {
         primary: 'red',
         secondary: 'blue',
-        black: '#000'
+        black: '#000',
+        dark: {
+            primary: 'white'
+        }
     },
     space: [0, 4, 8, 16],
+    borderWidths: [0, 1, 2],
     layout: {
         spacing: {
             large: {
@@ -16,8 +20,9 @@ export default transformTheme({
     },
     buttons: {
         base: {
-            padding: 2,
-            paddingBottom: 3,
+            p: 3,
+            paddingX: 2,
+            borderWidth: 1
         },
         primary: {
             backgroundColor: 'primary'

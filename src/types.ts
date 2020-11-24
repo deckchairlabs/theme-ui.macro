@@ -1,4 +1,5 @@
 import * as Babel from '@babel/core'
+import { Theme } from '@theme-ui/css'
 import { MacroParams } from 'babel-plugin-macros'
 
 export type MacroHandlerParams = Omit<MacroParams, 'config'> & {
@@ -8,6 +9,7 @@ export type MacroHandlerParams = Omit<MacroParams, 'config'> & {
 }
 
 export type Plugin = (
-  expression: Babel.types.ObjectExpression,
+  nodePath: Babel.NodePath<Babel.Node>,
+  theme: Theme,
   babel: typeof Babel
 ) => void

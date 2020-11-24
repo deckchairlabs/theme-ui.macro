@@ -1,29 +1,16 @@
 import { createMacro, MacroHandler, MacroError } from 'babel-plugin-macros'
 import * as Babel from '@babel/core'
-import { get, scales, Theme } from '@theme-ui/css'
-import { NodePath, Node } from '@babel/traverse'
-import { ObjectPropertyVisitor } from './visitors/ObjectProperty'
-import { SpreadElementVisitor } from './visitors/SpreadElement'
+import { get, Theme } from '@theme-ui/css'
+import { NodePath } from '@babel/traverse'
 import { MacroHandlerParams } from './types'
+import { notUndefined } from './utils'
 import {
-  expressionToCssValue,
-  getObjectPropertyKey,
-  getObjectPropertyValue,
-  getPropertyPath,
-  notUndefined,
-  toCustomPropertyValue,
-} from './utils'
-import {
-  ArrayExpression,
   arrayExpression,
   Expression,
   isIdentifier,
-  isNumericLiteral,
   isObjectExpression,
   isObjectProperty,
-  isSpreadElement,
   isStringLiteral,
-  isVariableDeclarator,
   numericLiteral,
   objectExpression,
   ObjectExpression,
@@ -34,10 +21,9 @@ import {
 import resolveBindings from './resolvers/bindings'
 
 const internalProperties = ['variant']
-const tokenProperties = ['colors', 'space']
 
 function shouldSkipProperty(property: string) {
-  return [...tokenProperties, ...internalProperties].includes(property)
+  return [...internalProperties].includes(property)
 }
 
 const macroHandler: MacroHandler = ({
@@ -64,10 +50,19 @@ const macroHandler: MacroHandler = ({
       if (transformedTheme) {
         // Replace the path to the macro call expression with the final object expression
         referencePath.parentPath.replaceWith(transformedTheme)
+        const evaluatedTheme = referencePath.parentPath.evaluate()
 
         // Pass the transformed theme through any provided plugins
-        if (config?.plugins) {
-          config.plugins.forEach((plugin) => plugin(transformedTheme, babel))
+        if (evaluatedTheme.confident && config?.plugins) {
+          config.plugins.forEach((plugin) => {
+            // We re-evaulate the theme for each plugin as plugins are allowed to modify it
+            const theme = referencePath.parentPath.evaluate().value as Theme
+            plugin(referencePath.parentPath, theme, babel)
+          })
+        } else if (!evaluatedTheme.confident) {
+          throw new MacroError(
+            'Could not confidently evaluate the transformed theme.'
+          )
         }
       }
     } else {
@@ -90,72 +85,6 @@ function asFunction(nodePath: NodePath<ObjectExpression>) {
   return transformedTheme
 }
 
-function isObjectPropertyFilter(
-  expression:
-    | Babel.types.ObjectMethod
-    | Babel.types.ObjectProperty
-    | Babel.types.SpreadElement
-    | undefined
-): expression is Babel.types.ObjectProperty {
-  return Babel.types.isObjectProperty(expression)
-}
-
-// function declareCustomProperties(
-//   babel: typeof Babel,
-//   objectExpression: Babel.types.ObjectExpression
-// ) {
-//   const tokens = objectExpression.properties
-//     .filter((property) => {
-//       if (babel.types.isObjectProperty(property)) {
-//         const propertyKey = getObjectPropertyKey(property)
-//         return propertyKey && tokenProperties.includes(propertyKey)
-//       }
-
-//       return false
-//     })
-//     .filter(isObjectPropertyFilter)
-
-//   const properties = tokens
-//     .flatMap((token) => {
-//       const scaleKey = getObjectPropertyKey(token)
-//       switch (token.value.type) {
-//         case 'ObjectExpression':
-//           return token.value.properties.map((property) => {
-//             if (babel.types.isObjectProperty(property)) {
-//               const propertyKey = getObjectPropertyKey(property)
-//               const propertyValue = getObjectPropertyValue(property)
-//               if (propertyKey && propertyValue) {
-//                 return babel.types.objectProperty(
-//                   babel.types.stringLiteral(`--${scaleKey}-${propertyKey}`),
-//                   babel.types.stringLiteral(propertyValue)
-//                 )
-//               }
-//             }
-//           })
-//         case 'ArrayExpression':
-//           return token.value.elements.map((element, index) => {
-//             const value = expressionToCssValue(element)
-//             if (value) {
-//               return babel.types.objectProperty(
-//                 babel.types.stringLiteral(`--${scaleKey}-${String(index)}`),
-//                 babel.types.stringLiteral(value)
-//               )
-//             }
-//           })
-//       }
-//     })
-//     .filter(notUndefined)
-
-//   objectExpression.properties.unshift(
-//     babel.types.objectProperty(
-//       babel.types.stringLiteral(':root'),
-//       babel.types.objectExpression(properties)
-//     )
-//   )
-
-//   return objectExpression
-// }
-
 function transformObjectExpression(
   theme: Theme,
   objectExpression: ObjectExpression
@@ -169,8 +98,6 @@ function transformObjectExpression(
           ? property.key.value
           : false
 
-        const scaleKey = propertyKey ? get(scales, propertyKey) || null : null
-
         if (propertyKey && shouldSkipProperty(propertyKey)) {
           return property
         }
@@ -183,50 +110,12 @@ function transformObjectExpression(
 
           return transformSpreadObject(theme, applyObjectExpression)
         }
-
-        switch (property.value.type) {
-          case 'StringLiteral':
-          case 'NumericLiteral':
-            const propertyValue = String(property.value.value)
-            const isThemeToken =
-              get(theme, getPropertyPath(propertyValue, scaleKey)) !== undefined
-
-            if (isThemeToken) {
-              property.value = stringLiteral(
-                toCustomPropertyValue(propertyValue, scaleKey)
-              )
-            }
-            break
-          case 'ArrayExpression':
-            property.value = arrayExpression(
-              transformArrayExpression(property.value, scaleKey)
-            )
-            break
-          case 'ObjectExpression':
-            property.value = transformObjectExpression(theme, property.value)
-            break
-        }
       }
       return property
     }
   )
 
   return objectExpression
-}
-
-function transformArrayExpression(
-  arrayExpression: ArrayExpression,
-  scaleKey?: string
-) {
-  return arrayExpression.elements.map((element) => {
-    if (isStringLiteral(element) || isNumericLiteral(element)) {
-      return stringLiteral(
-        toCustomPropertyValue(String(element.value), scaleKey)
-      )
-    }
-
-    return element
-  })
 }
 
 function transformSpreadObject(

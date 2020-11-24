@@ -4,6 +4,7 @@ import {
   Expression,
   SpreadElement,
   ObjectProperty,
+  isNumericLiteral,
 } from '@babel/types'
 
 export function notUndefined<TValue>(
@@ -33,7 +34,22 @@ export function getObjectPropertyKey(property: ObjectProperty) {
 }
 
 export function getObjectPropertyValue(property: ObjectProperty) {
-  return isStringLiteral(property.value) && property.value.value
+  return (
+    (isStringLiteral(property.value) || isNumericLiteral(property.value)) &&
+    property.value.value
+  )
+}
+
+export function primitiveToCssValue(primitive: string | number) {
+  switch (typeof primitive) {
+    case 'number':
+      if (primitive < 1 && !Number.isInteger(primitive)) {
+        return String(100 * primitive) + '%'
+      }
+      return String(primitive) + 'px'
+    default:
+      return primitive
+  }
 }
 
 export function expressionToCssValue(
