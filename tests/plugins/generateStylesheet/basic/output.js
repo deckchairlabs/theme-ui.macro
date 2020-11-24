@@ -1,4 +1,9 @@
 export default {
+  styles: {
+    root: {
+      '--colors-primary': 'red',
+    },
+  },
   colors: {
     primary: 'red',
     secondary: 'blue',

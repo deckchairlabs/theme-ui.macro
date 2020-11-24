@@ -1,6 +1,11 @@
 import transformTheme from '../../../../macro'
 
 export default transformTheme({
+    styles: {
+        root: {
+            '--colors-primary': 'red'
+        }
+    },
     colors: {
         primary: 'red',
         secondary: 'blue',
