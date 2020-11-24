@@ -34,7 +34,7 @@ const scales = {
 
 export default transformTheme({
   colors,
-  ...space,
+  ...scales,
   buttons: {
     base: {
       paddingX: 3,
