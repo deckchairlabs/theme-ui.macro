@@ -154,12 +154,9 @@ export default {
   ],
   buttons: {
     base: {
-      paddingX: 3,
-      paddingY: 2,
+      padding: 2,
     },
     primary: {
-      paddingX: 3,
-      paddingY: 2,
       backgroundColor: 'primary',
     },
   },
