@@ -27,6 +27,15 @@ export default function CustomPropertiesPlugin(
     const customProperties: babel.types.ObjectProperty[] = []
     const tokens = Object.values(scales).filter(onlyUnique)
 
+    function addCustomProperty(key: string, value: string) {
+      customProperties.push(
+        babel.types.objectProperty(
+          babel.types.stringLiteral(key),
+          babel.types.stringLiteral(value)
+        )
+      )
+    }
+
     path.traverse({
       ObjectProperty: {
         enter(nodePath) {
@@ -53,11 +62,9 @@ export default function CustomPropertiesPlugin(
                     )
                     const propertyValue = `var(${propertyIdentifier})`
 
-                    customProperties.push(
-                      babel.types.objectProperty(
-                        babel.types.stringLiteral(propertyIdentifier),
-                        babel.types.stringLiteral(nodePath.node.value.value)
-                      )
+                    addCustomProperty(
+                      propertyIdentifier,
+                      nodePath.node.value.value
                     )
 
                     nodePath.node.value = babel.types.stringLiteral(
@@ -82,12 +89,7 @@ export default function CustomPropertiesPlugin(
                       const themeValue = get(theme, propertyPath.join('.'))
                       const propertyValue = primitiveToCssValue(themeValue)
 
-                      customProperties.push(
-                        babel.types.objectProperty(
-                          babel.types.stringLiteral(propertyIdentifier),
-                          babel.types.stringLiteral(propertyValue)
-                        )
-                      )
+                      addCustomProperty(propertyIdentifier, propertyValue)
 
                       return babel.types.stringLiteral(
                         `var(${propertyIdentifier})`
