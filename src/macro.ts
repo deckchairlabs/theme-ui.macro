@@ -1,23 +1,10 @@
 import { createMacro, MacroHandler, MacroError } from 'babel-plugin-macros'
-import { get, Theme } from '@theme-ui/css'
+import { Theme } from '@theme-ui/css'
 import { NodePath } from '@babel/traverse'
 import { MacroHandlerParams } from './types'
-import {
-  getObjectPropertyKey,
-  objectToObjectPropertyExpressions,
-} from './utils'
-import {
-  isObjectExpression,
-  isStringLiteral,
-  ObjectExpression,
-} from '@babel/types'
+import { isObjectExpression, ObjectExpression } from '@babel/types'
 import resolveBindings from './resolvers/bindings'
-
-const internalProperties = ['variant']
-
-function shouldSkipProperty(property: string) {
-  return [...internalProperties].includes(property)
-}
+import applyDirectiveVisitor from './visitors/applyDirectiveVisitor'
 
 const macroHandler: MacroHandler = ({
   references,
@@ -73,32 +60,7 @@ function asFunction(nodePath: NodePath<ObjectExpression>) {
 
   nodePath.traverse({
     ObjectProperty: {
-      enter(path) {
-        const property = path.node
-        const propertyKey = getObjectPropertyKey(property)
-
-        if (propertyKey && !shouldSkipProperty(propertyKey)) {
-          if (
-            propertyKey === '@apply' &&
-            isStringLiteral(property.value) &&
-            isObjectExpression(path.parentPath.node)
-          ) {
-            const applyValue:
-              | Record<string, string | number | string[] | number[]>
-              | undefined = get(evaluatedTheme, property.value.value)
-
-            if (applyValue && typeof path.key === 'number') {
-              const properties = objectToObjectPropertyExpressions(applyValue)
-
-              // Add the properties from @apply at the index of the current @apply property
-              path.parentPath.node.properties.splice(path.key, 0, ...properties)
-
-              // Remove the current @apply property
-              path.remove()
-            }
-          }
-        }
-      },
+      enter: applyDirectiveVisitor(evaluatedTheme),
     },
   })
 

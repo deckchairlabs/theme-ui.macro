@@ -12,6 +12,12 @@ import {
   identifier,
 } from '@babel/types'
 
+export const internalProperties = ['variant']
+
+export function shouldSkipProperty(property: string) {
+  return [...internalProperties].includes(property)
+}
+
 export function notUndefined<TValue>(
   value: TValue | null | undefined
 ): value is TValue {
