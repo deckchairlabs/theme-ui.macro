@@ -11,7 +11,8 @@ export default {
       paddingX: 3,
     },
     primary: {
-      '@apply': 'buttons.base',
+      paddingY: 2,
+      paddingX: 3,
     },
   },
 }

@@ -5,6 +5,11 @@ import {
   SpreadElement,
   ObjectProperty,
   isNumericLiteral,
+  arrayExpression,
+  stringLiteral,
+  numericLiteral,
+  objectProperty,
+  identifier,
 } from '@babel/types'
 
 export function notUndefined<TValue>(
@@ -50,6 +55,31 @@ export function primitiveToCssValue(primitive: string | number) {
     default:
       return primitive
   }
+}
+
+export function primitiveToBabelExpression(
+  primitive: string | number | any[]
+): Expression {
+  if (Array.isArray(primitive)) {
+    return arrayExpression(primitive.map(primitiveToBabelExpression))
+  }
+  return typeof primitive === 'string'
+    ? stringLiteral(primitive)
+    : numericLiteral(primitive)
+}
+
+export function objectToObjectPropertyExpressions(
+  object: Record<string, string | number | string[] | number[]>
+) {
+  return Object.entries(object)
+    .map(([key, value]) => {
+      const valueExpression = primitiveToBabelExpression(value)
+
+      if (valueExpression) {
+        return objectProperty(identifier(key), valueExpression)
+      }
+    })
+    .filter(notUndefined)
 }
 
 export function expressionToCssValue(

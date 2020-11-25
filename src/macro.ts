@@ -1,22 +1,15 @@
 import { createMacro, MacroHandler, MacroError } from 'babel-plugin-macros'
-import * as Babel from '@babel/core'
 import { get, Theme } from '@theme-ui/css'
 import { NodePath } from '@babel/traverse'
 import { MacroHandlerParams } from './types'
-import { notUndefined } from './utils'
 import {
-  arrayExpression,
-  Expression,
-  isIdentifier,
+  getObjectPropertyKey,
+  objectToObjectPropertyExpressions,
+} from './utils'
+import {
   isObjectExpression,
-  isObjectProperty,
   isStringLiteral,
-  numericLiteral,
-  objectExpression,
   ObjectExpression,
-  objectProperty,
-  spreadElement,
-  stringLiteral,
 } from '@babel/types'
 import resolveBindings from './resolvers/bindings'
 
@@ -77,75 +70,39 @@ function asFunction(nodePath: NodePath<ObjectExpression>) {
   resolveBindings(nodePath)
 
   const evaluatedTheme = nodePath.evaluate().value
-  const transformedTheme = transformObjectExpression(
-    evaluatedTheme,
-    nodePath.node
-  )
 
-  return transformedTheme
-}
+  nodePath.traverse({
+    ObjectProperty: {
+      enter(path) {
+        const property = path.node
+        const propertyKey = getObjectPropertyKey(property)
 
-function transformObjectExpression(
-  theme: Theme,
-  objectExpression: ObjectExpression
-) {
-  objectExpression.properties = objectExpression.properties.map(
-    (property, index) => {
-      if (isObjectProperty(property)) {
-        const propertyKey = isIdentifier(property.key)
-          ? property.key.name
-          : isStringLiteral(property.key)
-          ? property.key.value
-          : false
+        if (propertyKey && !shouldSkipProperty(propertyKey)) {
+          if (
+            propertyKey === '@apply' &&
+            isStringLiteral(property.value) &&
+            isObjectExpression(path.parentPath.node)
+          ) {
+            const applyValue:
+              | Record<string, string | number | string[] | number[]>
+              | undefined = get(evaluatedTheme, property.value.value)
 
-        if (propertyKey && shouldSkipProperty(propertyKey)) {
-          return property
+            if (applyValue && typeof path.key === 'number') {
+              const properties = objectToObjectPropertyExpressions(applyValue)
+
+              // Add the properties from @apply at the index of the current @apply property
+              path.parentPath.node.properties.splice(path.key, 0, ...properties)
+
+              // Remove the current @apply property
+              path.remove()
+            }
+          }
         }
+      },
+    },
+  })
 
-        if (propertyKey === '@apply' && isStringLiteral(property.value)) {
-          const applyObjectExpression: Record<
-            string,
-            string | number | string[] | number[]
-          > = get(theme, property.value.value)
-
-          return transformSpreadObject(theme, applyObjectExpression)
-        }
-      }
-      return property
-    }
-  )
-
-  return objectExpression
-}
-
-function transformSpreadObject(
-  theme: Theme,
-  object: Record<string, string | number | string[] | number[]>
-) {
-  function primitiveToBabelExpression(
-    primitive: string | number | any[]
-  ): Expression {
-    if (Array.isArray(primitive)) {
-      return arrayExpression(primitive.map(primitiveToBabelExpression))
-    }
-    return typeof primitive === 'string'
-      ? stringLiteral(primitive)
-      : numericLiteral(primitive)
-  }
-
-  const properties = Object.entries(object)
-    .map(([identifier, value]) => {
-      const valueExpression = primitiveToBabelExpression(value)
-
-      if (valueExpression) {
-        return objectProperty(stringLiteral(identifier), valueExpression)
-      }
-    })
-    .filter(notUndefined)
-
-  return spreadElement(
-    transformObjectExpression(theme, objectExpression(properties))
-  )
+  return nodePath.node
 }
 
 export default createMacro(macroHandler, {
