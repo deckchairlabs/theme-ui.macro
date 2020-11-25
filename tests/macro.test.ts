@@ -10,5 +10,5 @@ pluginTester({
     presets: ['@babel/preset-typescript'],
     filename: __filename,
   },
-  fixtures: path.join(__dirname, 'fixtures'),
+  fixtures: path.join(__dirname, 'macro'),
 })
