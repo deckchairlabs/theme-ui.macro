@@ -63,7 +63,8 @@
     "entrypoints": [
       "macro.ts",
       "plugins/generateStylesheet.ts",
-      "plugins/customProperties.ts"
+      "plugins/customProperties.ts",
+      "plugins/typescriptDeclarations.ts"
     ]
   }
 }
