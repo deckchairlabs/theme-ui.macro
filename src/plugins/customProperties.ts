@@ -1,4 +1,12 @@
 import * as Babel from '@babel/core'
+import {
+  isIdentifier,
+  isObjectProperty,
+  ObjectMember,
+  ObjectMethod,
+  ObjectProperty,
+  SpreadElement,
+} from '@babel/types'
 import { Theme, get, scales } from '@theme-ui/css'
 import { Plugin } from '../types'
 import { primitiveToCssValue } from '../utils'
@@ -105,14 +113,59 @@ export default function CustomPropertiesPlugin(
     })
 
     if (babel.types.isObjectExpression(path.node)) {
-      path.node.properties.unshift(
-        babel.types.objectProperty(
-          babel.types.stringLiteral(':custom-properties'),
-          babel.types.objectExpression(customProperties)
-        )
+      const existingStylesProperty = findObjectPropertyByName(
+        'styles',
+        path.node.properties
       )
+      if (
+        babel.types.isObjectProperty(existingStylesProperty) &&
+        babel.types.isObjectExpression(existingStylesProperty.value)
+      ) {
+        const existingRootProperty = findObjectPropertyByName(
+          'root',
+          existingStylesProperty.value.properties
+        )
+
+        if (
+          babel.types.isObjectProperty(existingRootProperty) &&
+          babel.types.isObjectExpression(existingRootProperty.value)
+        ) {
+          existingRootProperty.value.properties.unshift(...customProperties)
+        } else {
+          existingStylesProperty.value.properties.unshift(
+            babel.types.objectProperty(
+              babel.types.identifier('root'),
+              babel.types.objectExpression(customProperties)
+            )
+          )
+        }
+      } else {
+        path.node.properties.unshift(
+          babel.types.objectProperty(
+            babel.types.identifier('styles'),
+            babel.types.objectExpression([
+              babel.types.objectProperty(
+                babel.types.identifier('root'),
+                babel.types.objectExpression(customProperties)
+              ),
+            ])
+          )
+        )
+      }
     }
   }
+}
+
+function findObjectPropertyByName(
+  name: string,
+  properties: (ObjectMember | SpreadElement)[]
+) {
+  return properties.find(
+    (property) =>
+      isObjectProperty(property) &&
+      isIdentifier(property.key) &&
+      property.key.name === name
+  )
 }
 
 function getPropertyPath(

@@ -1,17 +1,20 @@
 export default {
-  ':custom-properties': {
-    '--colors-primary': 'red',
-    '--colors-secondary': 'blue',
-    '--colors-black': '#000',
-    '--colors-dark-primary': 'white',
-    '--colors-light-primary': 'black',
-    '--space-0': '0px',
-    '--space-1': '4px',
-    '--space-2': '8px',
-    '--space-3': '16px',
-    '--borderWidths-0': '0px',
-    '--borderWidths-1': '1px',
-    '--borderWidths-2': '2px',
+  styles: {
+    root: {
+      '--colors-primary': 'red',
+      '--colors-secondary': 'blue',
+      '--colors-black': '#000',
+      '--colors-dark-primary': 'white',
+      '--colors-light-primary': 'black',
+      '--space-0': '0px',
+      '--space-1': '4px',
+      '--space-2': '8px',
+      '--space-3': '16px',
+      '--borderWidths-0': '0px',
+      '--borderWidths-1': '1px',
+      '--borderWidths-2': '2px',
+      fontSize: 1,
+    },
   },
   colors: {
     primary: 'var(--colors-primary)',
@@ -45,7 +48,7 @@ export default {
   buttons: {
     base: {
       p: 3,
-      paddingX: 2,
+      paddingX: [2, 3],
       borderWidth: 1,
     },
     primary: {
