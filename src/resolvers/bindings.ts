@@ -23,6 +23,31 @@ export default function resolveBindings(
   babel: typeof Babel,
   filename: string
 ) {
+  resolveImports(nodePath, babel, filename)
+
+  const bindings = nodePath.scope.getAllBindings()
+
+  Object.keys(bindings).forEach((key) => {
+    const binding = nodePath.scope.getBinding(key)
+    if (binding) {
+      binding.referencePaths.forEach((reference) => {
+        switch (binding.path.node?.type) {
+          case 'VariableDeclarator':
+            resolveVariableDeclaratorBinding(binding, reference)
+            break
+        }
+      })
+    }
+  })
+
+  return nodePath
+}
+
+export function resolveImports(
+  nodePath: NodePath<ObjectExpression>,
+  babel: typeof Babel,
+  filename: string
+) {
   nodePath.traverse({
     ObjectProperty: {
       enter(path) {
@@ -104,23 +129,6 @@ export default function resolveBindings(
       },
     },
   })
-
-  const bindings = nodePath.scope.getAllBindings()
-
-  Object.keys(bindings).forEach((key) => {
-    const binding = nodePath.scope.getBinding(key)
-    if (binding) {
-      binding.referencePaths.forEach((reference) => {
-        switch (binding.path.node?.type) {
-          case 'VariableDeclarator':
-            resolveVariableDeclaratorBinding(binding, reference)
-            break
-        }
-      })
-    }
-  })
-
-  return nodePath
 }
 
 export function resolveVariableDeclaratorBinding(
@@ -132,34 +140,3 @@ export function resolveVariableDeclaratorBinding(
   }
   binding.path.remove()
 }
-
-// export function resolveSpreadObjectExpressionBinding(
-//   binding: Binding,
-//   reference: NodePath<Node>
-// ) {
-//   if (
-//     !isObjectExpression(reference.parentPath.parent) ||
-//     !isSpreadElement(reference.parent)
-//   ) {
-//     return
-//   }
-
-//   const spreadElement = reference.parent
-//   const propertyIndex = reference.parentPath.parent.properties.findIndex(
-//     (property) => property === spreadElement
-//   )
-
-//   if (
-//     isVariableDeclarator(binding.path.node) &&
-//     isObjectExpression(binding.path.node.init)
-//   ) {
-//     reference.parentPath.parent.properties.splice(
-//       propertyIndex,
-//       0,
-//       ...binding.path.node.init.properties
-//     )
-//   }
-
-//   binding.path.remove()
-//   reference.parentPath.remove()
-// }
