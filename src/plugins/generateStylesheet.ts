@@ -34,6 +34,16 @@ export default function GenerateStylesheetPlugin(
 
     // Find any objectProperty that looks like a custom property declaration
     const customProperties: PostCSS.Declaration[] = []
+
+    function addCustomProperty(prop: string, value: string) {
+      customProperties.push(
+        PostCSS.decl({
+          prop,
+          value,
+        })
+      )
+    }
+
     path.traverse({
       ObjectProperty: {
         enter(nodePath) {
@@ -42,11 +52,9 @@ export default function GenerateStylesheetPlugin(
             babel.types.isStringLiteral(nodePath.node.key) &&
             nodePath.node.key.value.startsWith('--')
           ) {
-            customProperties.push(
-              PostCSS.decl({
-                prop: nodePath.node.key.value,
-                value: nodePath.node.value.value,
-              })
+            addCustomProperty(
+              nodePath.node.key.value,
+              nodePath.node.value.value
             )
           }
         },
