@@ -130,14 +130,16 @@ export default transformTheme({
 ↓ ↓ ↓ ↓ ↓ ↓ result ↓ ↓ ↓ ↓ ↓ ↓
 
 export default {
-  ':custom-properties': {
-    '--colors-primary': 'red',
-    '--colors-secondary': 'blue',
-    '--colors-dark-primary': 'white',
-    '--space-0': '0px',
-    '--space-1': '4px',
-    '--space-2': '8px',
-    '--space-3': '16px',
+  styles: {
+    root: {
+      '--colors-primary': 'red',
+      '--colors-secondary': 'blue',
+      '--colors-dark-primary': 'white',
+      '--space-0': '0px',
+      '--space-1': '4px',
+      '--space-2': '8px',
+      '--space-3': '16px',
+    },
   },
   colors: {
     primary: 'var(--colors-primary)',
