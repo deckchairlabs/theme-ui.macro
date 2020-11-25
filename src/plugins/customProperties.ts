@@ -3,8 +3,6 @@ import {
   isIdentifier,
   isObjectProperty,
   ObjectMember,
-  ObjectMethod,
-  ObjectProperty,
   SpreadElement,
 } from '@babel/types'
 import { Theme, get, scales } from '@theme-ui/css'
