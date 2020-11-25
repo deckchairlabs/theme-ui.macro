@@ -1,14 +1,17 @@
 import { createMacro, MacroHandler, MacroError } from 'babel-plugin-macros'
 import { Theme } from '@theme-ui/css'
+import * as Babel from '@babel/core'
 import { NodePath } from '@babel/traverse'
 import { MacroHandlerParams } from './types'
 import { isObjectExpression, ObjectExpression } from '@babel/types'
 import resolveBindings from './resolvers/bindings'
 import applyDirectiveVisitor from './visitors/applyDirectiveVisitor'
+import { PluginPass } from '@babel/core'
 
 const macroHandler: MacroHandler = ({
   references,
   babel,
+  state,
   config,
 }: MacroHandlerParams) => {
   const { default: defaultImport = [] } = references
@@ -25,7 +28,7 @@ const macroHandler: MacroHandler = ({
         )
       }
 
-      const transformedTheme = asFunction(callArguments[0])
+      const transformedTheme = asFunction(callArguments[0], babel, state)
 
       if (transformedTheme) {
         // Replace the path to the macro call expression with the transformedTheme object expression
@@ -53,8 +56,12 @@ const macroHandler: MacroHandler = ({
   })
 }
 
-function asFunction(nodePath: NodePath<ObjectExpression>) {
-  resolveBindings(nodePath)
+function asFunction(
+  nodePath: NodePath<ObjectExpression>,
+  babel: typeof Babel,
+  state: PluginPass
+) {
+  resolveBindings(nodePath, babel, state.filename)
 
   const evaluatedTheme = nodePath.evaluate().value
 
