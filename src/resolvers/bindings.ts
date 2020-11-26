@@ -1,29 +1,21 @@
 import fs from 'fs'
 import { dirname } from 'path'
 import * as Babel from '@babel/core'
-import { NodePath, Node, Binding } from '@babel/traverse'
+import traverse, { NodePath, Node, Binding } from '@babel/traverse'
 import {
-  isFile,
   isIdentifier,
   isExportNamedDeclaration,
-  isImportDeclaration,
-  isImportSpecifier,
-  isStringLiteral,
   isVariableDeclarator,
   ObjectExpression,
   isVariableDeclaration,
-  isExportDefaultDeclaration,
-  objectProperty,
-  identifier,
-  isObjectExpression,
 } from '@babel/types'
 
 export default function resolveBindings(
   nodePath: NodePath<ObjectExpression>,
   babel: typeof Babel,
-  filename: string
+  state: Babel.PluginPass
 ) {
-  resolveImports(nodePath, babel, filename)
+  resolveImports(nodePath, babel, state)
 
   const bindings = nodePath.scope.getAllBindings()
 
@@ -46,85 +38,46 @@ export default function resolveBindings(
 export function resolveImports(
   nodePath: NodePath<ObjectExpression>,
   babel: typeof Babel,
-  filename: string
+  state: Babel.PluginPass
 ) {
-  nodePath.traverse({
-    ObjectProperty: {
+  const filename = state.filename
+  const ast = state.file.ast
+
+  traverse(ast, {
+    ImportDeclaration: {
       enter(path) {
-        if (isIdentifier(path.node.value)) {
-          const objectPropertyPath = path
-          const identifierName = path.node.value.name
-          const binding = nodePath.scope.getBinding(identifierName)
-          if (
-            binding &&
-            isImportSpecifier(binding.path.node) &&
-            isImportDeclaration(binding.path.parentPath.node) &&
-            isStringLiteral(binding.path.parentPath.node.source)
-          ) {
-            const importFilePath = require.resolve(
-              binding.path.parentPath.node.source.value,
-              {
-                paths: [dirname(filename)],
-              }
-            )
+        const source = path.node.source.value
 
-            try {
-              const buffer = fs.readFileSync(importFilePath)
-              const ast = babel.parseSync(buffer.toString(), {
-                filename: importFilePath,
-              })
+        const importedAst = parseAstFromFile(source, dirname(filename), babel)
+        const moduleExports = getExportedVariableDeclarations(importedAst)
 
-              if (ast && isFile(ast)) {
-                const importSpecifiers = binding.path.parentPath.node.specifiers
+        if (moduleExports.size > 0) {
+          path.node.specifiers.forEach((specifier) => {
+            switch (specifier.type) {
+              case 'ImportSpecifier':
+                const binding = nodePath.scope.getBinding(specifier.local.name)
+                const resolvedImport = moduleExports.get(specifier.local.name)
 
-                ast.program.body.forEach((statement) => {
-                  if (
-                    (isExportNamedDeclaration(statement) ||
-                      isExportDefaultDeclaration(statement)) &&
-                    isVariableDeclaration(statement.declaration)
-                  ) {
-                    const declarations = statement.declaration.declarations
-                    const variableDeclarations = importSpecifiers.map(
-                      (specifier) => {
-                        if (
-                          isImportSpecifier(specifier) &&
-                          isIdentifier(declarations[0].id)
-                        ) {
-                          return declarations.find((declaration) => {
-                            if (
-                              isIdentifier(declaration.id) &&
-                              isIdentifier(specifier.imported)
-                            ) {
-                              return (
-                                declaration.id.name === specifier.imported.name
-                              )
-                            }
-                          })
-                        }
-                      }
-                    )
-
+                if (binding && resolvedImport) {
+                  binding.referencePaths.forEach((referencePath) => {
                     if (
-                      variableDeclarations[0] &&
-                      isObjectExpression(variableDeclarations[0].init)
-                    ) {
-                      objectPropertyPath.replaceWith(
-                        objectProperty(
-                          identifier(identifierName),
-                          variableDeclarations[0].init
-                        )
+                      babel.types.isIdentifier(referencePath.node) &&
+                      babel.types.isObjectProperty(
+                        referencePath.parentPath.node
+                      ) &&
+                      babel.types.isIdentifier(
+                        referencePath.parentPath.node.key
                       )
+                    ) {
+                      if (babel.types.isExpression(resolvedImport)) {
+                        referencePath.parentPath.node.value = resolvedImport
+                      }
                     }
-                  }
-                })
-
-                // Remove the import binding
-                binding.path.parentPath.remove()
-              }
-            } catch (error) {
-              console.error(error)
+                  })
+                }
+                break
             }
-          }
+          })
         }
       },
     },
@@ -139,4 +92,51 @@ export function resolveVariableDeclaratorBinding(
     reference.replaceWith(binding.path.node.init)
   }
   binding.path.remove()
+}
+
+function parseAstFromFile(source: string, path: string, babel: typeof Babel) {
+  // Resolve the path to the module import
+  const filepath = require.resolve(source, {
+    paths: [path],
+  })
+
+  const buffer = fs.readFileSync(filepath)
+  const ast = babel.parseSync(buffer.toString(), {
+    filename: filepath,
+  })
+
+  return ast
+}
+
+function getExportedVariableDeclarations(
+  ast: Babel.types.Program | Babel.types.File | null
+) {
+  const moduleExports: Map<string, Babel.Node> = new Map()
+
+  // Extract all the export declarations from the AST
+  traverse(ast, {
+    ExportDeclaration: {
+      enter(exportDeclaration) {
+        if (isExportNamedDeclaration(exportDeclaration.node)) {
+          if (isVariableDeclaration(exportDeclaration.node.declaration)) {
+            exportDeclaration.node.declaration.declarations.forEach(
+              (variableDeclaration) => {
+                if (
+                  isIdentifier(variableDeclaration.id) &&
+                  variableDeclaration.init
+                ) {
+                  moduleExports.set(
+                    variableDeclaration.id.name,
+                    variableDeclaration.init
+                  )
+                }
+              }
+            )
+          }
+        }
+      },
+    },
+  })
+
+  return moduleExports
 }

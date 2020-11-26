@@ -61,8 +61,7 @@ function asFunction(
   babel: typeof Babel,
   state: PluginPass
 ) {
-  resolveBindings(nodePath, babel, state.filename)
-
+  resolveBindings(nodePath, babel, state)
   const evaluatedTheme = nodePath.evaluate().value
 
   nodePath.traverse({
