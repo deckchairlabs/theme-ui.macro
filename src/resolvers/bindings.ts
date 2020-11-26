@@ -9,7 +9,7 @@ import {
   ObjectExpression,
   isVariableDeclaration,
   isExportDefaultDeclaration,
-  isObjectExpression,
+  isExpression,
 } from '@babel/types'
 
 export default function resolveBindings(
@@ -66,6 +66,9 @@ export function resolveImportBindings(
 
             if (binding) {
               switch (specifier.type) {
+                case 'ImportNamespaceSpecifier':
+                  console.log(Array.from(moduleExports.values()))
+                  break
                 case 'ImportDefaultSpecifier':
                   resolvedImport = moduleExports.get('default')
                   break
@@ -84,7 +87,9 @@ export function resolveImportBindings(
                     babel.types.isIdentifier(referencePath.parentPath.node.key)
                   ) {
                     if (babel.types.isExpression(resolvedImport)) {
-                      if (specifier.type === 'ImportDefaultSpecifier') {
+                      if (specifier.type === 'ImportNamespaceSpecifier') {
+                        console.log(specifier.local.name)
+                      } else if (specifier.type === 'ImportDefaultSpecifier') {
                         if (babel.types.isObjectExpression(resolvedImport)) {
                           referencePath.parentPath.replaceWithMultiple(
                             resolvedImport.properties
@@ -145,7 +150,7 @@ function getExportedExpressions(
         // Handle default exports
         if (
           isExportDefaultDeclaration(exportDeclaration.node) &&
-          isObjectExpression(exportDeclaration.node.declaration)
+          isExpression(exportDeclaration.node.declaration)
         ) {
           moduleExports.set('default', exportDeclaration.node.declaration)
         } else if (
