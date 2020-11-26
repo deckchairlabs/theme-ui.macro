@@ -1,4 +1,3 @@
-import { colors, space } from './tokens'
 export default {
   colors: {
     primary: 'red',
@@ -6,8 +5,8 @@ export default {
   },
   space: [0, 4, 8, 16],
   buttons: {
-    base: {
-      padding: 2,
+    primary: {
+      backgroundColor: 'red',
     },
   },
 }
