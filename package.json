@@ -18,7 +18,6 @@
   },
   "files": [
     "dist/",
-    "macro/",
     "plugins/",
     "package.json",
     "README.md"
@@ -63,7 +62,7 @@
   },
   "preconstruct": {
     "entrypoints": [
-      "macro.ts",
+      "index.ts",
       "plugins/generateStylesheet.ts",
       "plugins/customProperties.ts",
       "plugins/typescriptDeclarations.ts"

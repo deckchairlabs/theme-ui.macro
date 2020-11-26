@@ -1,3 +1,4 @@
 {
-  "main": "dist/theme-ui.macro-plugins-generateStylesheet.cjs.js"
+  "main": "dist/theme-ui.macro-plugins-generateStylesheet.cjs.js",
+  "module": "dist/theme-ui.macro-plugins-generateStylesheet.esm.js"
 }

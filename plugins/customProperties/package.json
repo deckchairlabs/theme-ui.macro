@@ -1,3 +1,4 @@
 {
-  "main": "dist/theme-ui.macro-plugins-customProperties.cjs.js"
+  "main": "dist/theme-ui.macro-plugins-customProperties.cjs.js",
+  "module": "dist/theme-ui.macro-plugins-customProperties.esm.js"
 }
