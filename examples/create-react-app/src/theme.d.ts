@@ -5,7 +5,7 @@ declare module "@theme-ui/css" {
         colors: {
             background: "white";
             text: "black";
-            primary: "red";
+            primary: "#1e7acf";
         };
         space: [
             0,
