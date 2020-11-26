@@ -29,13 +29,11 @@ export default function TypescriptDeclarationsPlugin(
       newLine: ts.NewLineKind.LineFeed,
     })
 
-    const result = printer.printNode(
-      ts.EmitHint.Unspecified,
+    const result = printer.printList(
+      ts.ListFormat.MultiLine,
       createModuleDeclaration(theme),
       resultFile
     )
-
-    console.log(result)
 
     fs.writeFileSync(config.output, result)
   }
@@ -61,12 +59,30 @@ function createModuleDeclaration(theme: Theme) {
     ),
   ])
 
-  return ts.factory.createModuleDeclaration(
+  const importDeclaration = ts.factory.createImportDeclaration(
+    undefined,
+    undefined,
+    ts.factory.createImportClause(
+      false,
+      undefined,
+      ts.factory.createNamedImports([
+        ts.factory.createImportSpecifier(
+          undefined,
+          ts.factory.createIdentifier('Theme')
+        ),
+      ])
+    ),
+    createStringLiteral('@theme-ui/css')
+  )
+
+  const moduleDeclaration = ts.factory.createModuleDeclaration(
     undefined,
     [ts.factory.createToken(ts.SyntaxKind.DeclareKeyword)],
-    ts.factory.createStringLiteral('@theme-ui/css'),
+    createStringLiteral('@theme-ui/css'),
     moduleBlock
   )
+
+  return ts.factory.createNodeArray([importDeclaration, moduleDeclaration])
 }
 
 function createExportToken() {
@@ -80,7 +96,7 @@ function createTupleTypeNodeFromArray(array: Array<any>) {
         case 'boolean':
           return element ? ts.factory.createTrue() : ts.factory.createFalse()
         case 'string':
-          return ts.factory.createStringLiteral(element)
+          return createStringLiteral(element)
         case 'number':
           return ts.factory.createNumericLiteral(element)
         case 'bigint':
@@ -108,7 +124,7 @@ function createLiteralTypeNodes(object: object | Array<any>) {
         switch (typeof value) {
           case 'string':
             typeNode = ts.factory.createLiteralTypeNode(
-              ts.factory.createStringLiteral(value)
+              createStringLiteral(value)
             )
             break
           case 'number':
@@ -144,4 +160,8 @@ function createPropertySignature(
     undefined,
     typeNode
   )
+}
+
+function createStringLiteral(value: string) {
+  return ts.factory.createStringLiteral(value)
 }
