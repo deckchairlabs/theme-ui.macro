@@ -1,0 +1,14 @@
+:root {
+    --colors-primary: red
+}
+.button-base {
+    padding: 16px;
+    padding-left: 8px;
+    padding-right: 8px
+}
+.button-primary {
+    background-color: red
+}
+.layout-spacing-large {
+    margin: 16px
+}
