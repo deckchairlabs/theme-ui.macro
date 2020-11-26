@@ -1,0 +1,9 @@
+:root {
+    --theme-ui-colors-background: white;
+    --theme-ui-colors-text: black;
+    --theme-ui-colors-primary: #1e7acf;
+    --theme-ui-space-0: 0px;
+    --theme-ui-space-1: 4px;
+    --theme-ui-space-2: 8px;
+    --theme-ui-space-3: 16px
+}
