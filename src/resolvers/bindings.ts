@@ -1,7 +1,7 @@
 import fs from 'fs'
 import { dirname } from 'path'
 import * as Babel from '@babel/core'
-import traverse, { NodePath, Node, Binding } from '@babel/traverse'
+import traverse, { Binding } from '@babel/traverse'
 import {
   isIdentifier,
   isExportNamedDeclaration,
@@ -185,7 +185,7 @@ export function resolveImportSpecifier(
 
 export function resolveVariableDeclaratorBinding(
   binding: Binding,
-  reference: NodePath<Node>
+  reference: Babel.NodePath<Babel.Node>
 ) {
   if (isVariableDeclarator(binding.path.node) && binding.path.node.init) {
     reference.replaceWith(binding.path.node.init)

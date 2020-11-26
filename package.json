@@ -1,6 +1,6 @@
 {
   "name": "theme-ui.macro",
-  "version": "0.1.0",
+  "version": "0.0.0-experimental",
   "description": "Babel macro for transforming ThemeUI spec themes",
   "main": "dist/theme-ui.macro.cjs.js",
   "module": "dist/theme-ui.macro.esm.js",
@@ -32,12 +32,13 @@
   "author": "James Edmonds",
   "license": "MIT",
   "dependencies": {
-    "@babel/types": "^7.12.7",
     "postcss": "^8.1.9",
     "postcss-nested": "^5.0.1"
   },
   "peerDependencies": {
     "@babel/core": "^7.12.7",
+    "@babel/traverse": "^7.12.9",
+    "@babel/types": "^7.12.7",
     "@theme-ui/css": "^0.4.0-rc.11",
     "babel-plugin-macros": "^2.8.0",
     "typescript": "^4"
