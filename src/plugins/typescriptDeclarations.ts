@@ -41,31 +41,69 @@ export default function TypescriptDeclarationsPlugin(
   }
 }
 
-function createObjectTypeLiteralNode(object: object) {
+function createModuleDeclaration(theme: Theme) {
+  const interfaceMembers: ts.TypeElement[] = Object.entries(theme)
+    .map(([key, value]) => {
+      let typeNode = createLiteralTypeNodes(value)
+
+      return createPropertySignature(key, typeNode)
+    })
+    .filter(notUndefined)
+
+  const moduleBlock = ts.factory.createModuleBlock([
+    ts.factory.createInterfaceDeclaration(
+      undefined,
+      [createExportToken()],
+      ts.factory.createIdentifier('Theme'),
+      undefined,
+      undefined,
+      interfaceMembers
+    ),
+  ])
+
+  return ts.factory.createModuleDeclaration(
+    undefined,
+    [ts.factory.createToken(ts.SyntaxKind.DeclareKeyword)],
+    ts.factory.createStringLiteral('@theme-ui/css'),
+    moduleBlock
+  )
+}
+
+function createExportToken() {
+  return ts.factory.createToken(ts.SyntaxKind.ExportKeyword)
+}
+
+function createTupleTypeNodeFromArray(array: Array<any>) {
+  const elements = array
+    .map((element) => {
+      switch (typeof element) {
+        case 'boolean':
+          return element ? ts.factory.createTrue() : ts.factory.createFalse()
+        case 'string':
+          return ts.factory.createStringLiteral(element)
+        case 'number':
+          return ts.factory.createNumericLiteral(element)
+        case 'bigint':
+          return ts.factory.createBigIntLiteral(String(element))
+      }
+    })
+    .filter(notUndefined)
+    .map((literal) => ts.factory.createLiteralTypeNode(literal))
+
+  return ts.factory.createTupleTypeNode(elements)
+}
+
+function createLiteralTypeNodes(object: object | Array<any>) {
+  if (Array.isArray(object)) {
+    return createTupleTypeNodeFromArray(object)
+  }
+
   const propertySignatures: ts.PropertySignature[] = Object.entries(object)
     .map(([key, value]) => {
-      const identifier = ts.factory.createIdentifier(key)
       let typeNode = undefined
 
       if (Array.isArray(value)) {
-        const elements = value
-          .map((element) => {
-            switch (typeof element) {
-              case 'boolean':
-                return element
-                  ? ts.factory.createTrue()
-                  : ts.factory.createFalse()
-              case 'string':
-                return ts.factory.createStringLiteral(element)
-              case 'number':
-                return ts.factory.createNumericLiteral(element)
-              case 'bigint':
-                return ts.factory.createBigIntLiteral(String(element))
-            }
-          })
-          .filter(notUndefined)
-          .map((literal) => ts.factory.createLiteralTypeNode(literal))
-        typeNode = ts.factory.createTupleTypeNode(elements)
+        typeNode = createTupleTypeNodeFromArray(value)
       } else {
         switch (typeof value) {
           case 'string':
@@ -79,18 +117,13 @@ function createObjectTypeLiteralNode(object: object) {
             )
             break
           case 'object':
-            typeNode = createObjectTypeLiteralNode(value)
+            typeNode = createLiteralTypeNodes(value)
             break
         }
       }
 
       if (typeNode) {
-        return ts.factory.createPropertySignature(
-          undefined,
-          identifier,
-          undefined,
-          typeNode
-        )
+        return createPropertySignature(key, typeNode)
       }
     })
     .filter(notUndefined)
@@ -98,80 +131,17 @@ function createObjectTypeLiteralNode(object: object) {
   return ts.factory.createTypeLiteralNode(propertySignatures)
 }
 
-function createModuleDeclaration(theme: Theme) {
-  console.log(theme)
-
-  const interfaceMembers: ts.TypeElement[] = Object.entries(theme)
-    .map(([key, value]) => {
-      switch (typeof value) {
-        case 'object':
-          return ts.factory.createPropertySignature(
-            undefined,
-            ts.factory.createIdentifier(key),
-            undefined,
-            createObjectTypeLiteralNode(value)
-          )
-          break
-      }
-    })
-    .filter(notUndefined)
-
-  const moduleBlock = ts.factory.createModuleBlock([
-    ts.factory.createInterfaceDeclaration(
-      undefined,
-      [ts.createToken(ts.SyntaxKind.ExportKeyword)],
-      ts.factory.createIdentifier('Theme'),
-      undefined,
-      undefined,
-      interfaceMembers
-    ),
-  ])
-
-  return ts.factory.createModuleDeclaration(
+function createPropertySignature(
+  identifier: string,
+  typeNode: ts.TypeNode,
+  readonly?: boolean
+) {
+  return ts.factory.createPropertySignature(
+    readonly
+      ? [ts.factory.createToken(ts.SyntaxKind.ReadonlyKeyword)]
+      : undefined,
+    ts.factory.createIdentifier(identifier),
     undefined,
-    [ts.createToken(ts.SyntaxKind.DeclareKeyword)],
-    ts.factory.createStringLiteral('@theme-ui/css'),
-    moduleBlock
+    typeNode
   )
-  // const functionName = ts.createIdentifier('factorial')
-  // const paramName = ts.createIdentifier('n')
-  // const parameter = ts.createParameter(
-  //   /*decorators*/ undefined,
-  //   /*modifiers*/ undefined,
-  //   /*dotDotDotToken*/ undefined,
-  //   paramName
-  // )
-
-  // const condition = ts.createBinary(
-  //   paramName,
-  //   ts.SyntaxKind.LessThanEqualsToken,
-  //   ts.createLiteral(1)
-  // )
-  // const ifBody = ts.createBlock(
-  //   [ts.createReturn(ts.createLiteral(1))],
-  //   /*multiline*/ true
-  // )
-
-  // const decrementedArg = ts.createBinary(
-  //   paramName,
-  //   ts.SyntaxKind.MinusToken,
-  //   ts.createLiteral(1)
-  // )
-  // const recurse = ts.createBinary(
-  //   paramName,
-  //   ts.SyntaxKind.AsteriskToken,
-  //   ts.createCall(functionName, /*typeArgs*/ undefined, [decrementedArg])
-  // )
-  // const statements = [ts.createIf(condition, ifBody), ts.createReturn(recurse)]
-
-  // return ts.createFunctionDeclaration(
-  //   /*decorators*/ undefined,
-  //   /*modifiers*/ [ts.createToken(ts.SyntaxKind.ExportKeyword)],
-  //   /*asteriskToken*/ undefined,
-  //   functionName,
-  //   /*typeParameters*/ undefined,
-  //   [parameter],
-  //   /*returnType*/ ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword),
-  //   ts.createBlock(statements, /*multiline*/ true)
-  // )
 }

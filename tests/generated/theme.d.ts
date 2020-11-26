@@ -6,14 +6,12 @@ declare module "@theme-ui/css" {
             black: "#000";
             highlight: "colors.primary";
         };
-        space: {
-            0: 0;
-            1: 4;
-            2: 8;
-            3: 16;
-            4: "50%";
-            5: 0.4;
-        };
+        space: [
+            0,
+            4,
+            8,
+            16
+        ];
         buttons: {
             base: {
                 padding: [
