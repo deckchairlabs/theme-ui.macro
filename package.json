@@ -1,6 +1,6 @@
 {
   "name": "theme-ui.macro",
-  "version": "0.0.0-experimental.0",
+  "version": "0.0.0-experimental.1",
   "description": "Babel macro for transforming ThemeUI spec themes",
   "main": "dist/theme-ui.macro.cjs.js",
   "module": "dist/theme-ui.macro.esm.js",
@@ -25,7 +25,7 @@
   "scripts": {
     "dev": "preconstruct dev",
     "build": "preconstruct build",
-    "release": "npm run test && npm run build && npm publish",
+    "release": "yarn test && yarn build && yarn publish --tag experimental",
     "test": "yarn jest"
   },
   "author": "James Edmonds",
