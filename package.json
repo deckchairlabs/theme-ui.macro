@@ -24,10 +24,10 @@
     "README.md"
   ],
   "scripts": {
+    "dev": "preconstruct dev",
     "build": "preconstruct build",
     "release": "npm run test && npm run build && npm publish",
-    "test": "yarn jest",
-    "postinstall": "preconstruct dev"
+    "test": "yarn jest"
   },
   "author": "James Edmonds",
   "license": "MIT",
