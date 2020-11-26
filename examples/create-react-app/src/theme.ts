@@ -1,4 +1,4 @@
-import transformTheme from 'theme-ui.macro/macro'
+import transformTheme from 'theme-ui.macro'
 
 export default transformTheme({
   useCustomProperties: false,
