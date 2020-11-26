@@ -265,3 +265,70 @@ Should result in a css file being generated like the below.
   background-color: var(--colors-primary);
 }
 ```
+
+### TypescriptDeclaration
+
+Generate a TypeScript declaration file from the transformed theme.
+
+#### **`babel-plugin-macros.config.js`**
+
+```js
+const typescriptDeclarations = require('theme-ui.macro/plugins/typescriptDeclarations')
+
+module.exports = {
+  themeUI: {
+    plugins: [
+      typescriptDeclarations({
+        output: './path/to/generated/theme.d.ts',
+      }),
+    ],
+  },
+}
+```
+
+#### **`./theme.ts`**
+
+```js
+import transformTheme from 'theme-ui.macro'
+
+export default transformTheme({
+  colors: {
+    primary: 'red',
+    secondary: 'blue',
+  },
+  space: [0, 4, 8, 16],
+  buttons: {
+    base: {
+      padding: 2,
+    },
+    primary: {
+      backgroundColor: 'primary',
+    },
+  },
+})
+```
+
+Should result in a TypeScript declaration file being generated like the below.
+
+#### **`./path/to/generated/theme.d.ts`**
+
+```ts
+import { Theme } from '@theme-ui/css'
+declare module '@theme-ui/css' {
+  export interface Theme {
+    colors: {
+      primary: 'red'
+      secondary: 'blue'
+    }
+    space: [0, 4, 8, 16]
+    buttons: {
+      base: {
+        padding: 2
+      }
+      primary: {
+        backgroundColor: 'primary'
+      }
+    }
+  }
+}
+```
