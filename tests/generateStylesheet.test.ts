@@ -16,7 +16,7 @@ pluginTester({
       plugins: [
         generateStylesheet({
           selectors: { buttons: '.button', layout: '.layout' },
-          output: path.resolve(__dirname, './theme.generated.css'),
+          output: path.resolve(__dirname, 'generated/theme.css'),
         }),
       ],
     },

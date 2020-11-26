@@ -13,7 +13,11 @@ pluginTester({
   },
   pluginOptions: {
     themeUI: {
-      plugins: [typescriptDeclarations()],
+      plugins: [
+        typescriptDeclarations({
+          output: path.join(__dirname, 'generated/theme.d.ts'),
+        }),
+      ],
     },
   },
   fixtures: path.join(__dirname, 'plugins/typescriptDeclarations'),
