@@ -99,6 +99,35 @@ export function resolveImportBindings(
                     babel.types.isExpression(resolvedImport)
                   ) {
                     switch (referencePath.parentPath.node.type) {
+                      case 'MemberExpression':
+                        if (
+                          babel.types.isIdentifier(
+                            referencePath.parentPath.node.property
+                          ) &&
+                          babel.types.isObjectExpression(resolvedImport)
+                        ) {
+                          const propertyName =
+                            referencePath.parentPath.node.property.name
+                          const memberExpressionProperty = resolvedImport.properties.find(
+                            (property) => {
+                              return (
+                                babel.types.isObjectProperty(property) &&
+                                babel.types.isIdentifier(property.key) &&
+                                property.key.name === propertyName
+                              )
+                            }
+                          )
+                          if (
+                            babel.types.isObjectProperty(
+                              memberExpressionProperty
+                            )
+                          ) {
+                            referencePath.parentPath.replaceWith(
+                              memberExpressionProperty.value
+                            )
+                          }
+                        }
+                        break
                       case 'ObjectProperty':
                         resolveImportSpecifier(
                           specifier,
