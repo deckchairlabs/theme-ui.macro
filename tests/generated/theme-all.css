@@ -1,0 +1,30 @@
+:root {
+    --colors-primary: red;
+    --colors-secondary: blue;
+    --colors-black: #000;
+    --colors-dark-primary: white;
+    --colors-light-primary: black;
+    --space-0: 0px;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 16px;
+    --borderWidths-0: 0px;
+    --borderWidths-1: 1px;
+    --borderWidths-2: 2px
+}
+.button-base {
+    padding: 16px;
+}
+.button-base-paddingX {
+    0: 2px;
+    1: 3px
+}
+.button-base {
+    border-width: 1px
+}
+.button-primary {
+    background-color: red
+}
+.layout-spacing-large {
+    margin: 16px
+}
