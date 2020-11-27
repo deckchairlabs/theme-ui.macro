@@ -1,4 +1,0 @@
-{
-  "main": "dist/theme-ui.macro-plugins-typescriptDeclarations.cjs.js",
-  "module": "dist/theme-ui.macro-plugins-typescriptDeclarations.esm.js"
-}

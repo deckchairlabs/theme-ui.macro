@@ -1,12 +1,15 @@
 import { createMacro, MacroHandler, MacroError } from 'babel-plugin-macros'
-import { Theme } from '@theme-ui/css'
 import * as Babel from '@babel/core'
 import { NodePath } from '@babel/traverse'
-import { MacroHandlerParams } from './types'
 import { isObjectExpression, ObjectExpression } from '@babel/types'
+import { Theme } from '@theme-ui/css'
+import { MacroHandlerParams, Plugin } from './types'
 import resolveBindings from './resolvers/bindings'
 import applyDirectiveVisitor from './visitors/applyDirectiveVisitor'
-import { PluginPass } from '@babel/core'
+
+import customProperties from './plugins/customProperties'
+import generateStylesheet from './plugins/generateStylesheet'
+import generateTypescriptDeclaration from './plugins/generateTypescriptDeclaration'
 
 const macroHandler: MacroHandler = ({
   references,
@@ -15,6 +18,7 @@ const macroHandler: MacroHandler = ({
   config,
 }: MacroHandlerParams) => {
   const { default: defaultImport = [] } = references
+  const plugins: Plugin[] = resolvePlugins(config)
 
   defaultImport.forEach((referencePath) => {
     if (babel.types.isCallExpression(referencePath.parentPath)) {
@@ -36,10 +40,10 @@ const macroHandler: MacroHandler = ({
         const evaluatedTheme = referencePath.parentPath.evaluate()
 
         // Pass the transformed theme through any provided plugins
-        if (evaluatedTheme.confident && config?.plugins) {
+        if (evaluatedTheme.confident) {
           const theme = evaluatedTheme.value as Theme
 
-          config.plugins.forEach((plugin) => {
+          plugins.forEach((plugin) => {
             plugin(referencePath.parentPath, theme, babel)
           })
         } else if (!evaluatedTheme.confident) {
@@ -59,7 +63,7 @@ const macroHandler: MacroHandler = ({
 function asFunction(
   nodePath: NodePath<ObjectExpression>,
   babel: typeof Babel,
-  state: PluginPass
+  state: Babel.PluginPass
 ) {
   resolveBindings(babel, state)
   const evaluatedTheme = nodePath.evaluate().value
@@ -71,6 +75,24 @@ function asFunction(
   })
 
   return nodePath.node
+}
+
+function resolvePlugins(config: MacroHandlerParams['config']) {
+  const plugins: Plugin[] = []
+
+  if (config?.customProperties) {
+    plugins.push(customProperties(config.customProperties))
+  }
+
+  if (config?.generateStylesheet) {
+    plugins.push(generateStylesheet(config.generateStylesheet))
+  }
+
+  if (config?.generateTSDeclaration) {
+    plugins.push(generateTypescriptDeclaration(config.generateTSDeclaration))
+  }
+
+  return plugins
 }
 
 const themeUIMacro: (theme: object) => Theme = createMacro(macroHandler, {

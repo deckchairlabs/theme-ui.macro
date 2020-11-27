@@ -1,7 +1,6 @@
 import path from 'path'
 import pluginTester from 'babel-plugin-tester'
 import plugin from 'babel-plugin-macros'
-import customProperties from '../src/plugins/customProperties'
 
 pluginTester({
   plugin,
@@ -14,7 +13,7 @@ pluginTester({
   },
   pluginOptions: {
     themeUI: {
-      plugins: [customProperties()],
+      customProperties: {},
     },
   },
   fixtures: path.join(__dirname, 'plugins/customProperties'),

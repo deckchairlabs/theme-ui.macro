@@ -4,7 +4,9 @@ import { MacroParams } from 'babel-plugin-macros'
 
 export type MacroHandlerParams = Omit<MacroParams, 'config'> & {
   config?: {
-    plugins?: Plugin[]
+    customProperties?: CustomPropertiesPluginConfig
+    generateStylesheet?: GenerateStylesheetPluginConfig
+    generateTSDeclaration?: GenerateTypescriptDeclarationsPluginConfig
   }
 }
 
@@ -13,3 +15,17 @@ export type Plugin = (
   theme: Theme,
   babel: typeof Babel
 ) => void
+
+export type CustomPropertiesPluginConfig = {
+  prefix?: string
+}
+
+export type GenerateStylesheetPluginConfig = {
+  output: string
+  selectors: Record<string, string>
+  selectorSeparator?: string
+}
+
+export type GenerateTypescriptDeclarationsPluginConfig = {
+  output: string
+}
