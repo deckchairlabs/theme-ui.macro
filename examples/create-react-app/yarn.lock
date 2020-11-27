@@ -10748,10 +10748,10 @@ text-table@0.2.0, text-table@^0.2.0:
   resolved "https://registry.yarnpkg.com/text-table/-/text-table-0.2.0.tgz#7f5ee823ae805207c00af2df4a84ec3fcfa570b4"
   integrity sha1-f17oI66AUgfACvLfSoTsP8+lcLQ=
 
-theme-ui.macro@^0.0.0-experimental.1:
-  version "0.0.0-experimental.1"
-  resolved "https://registry.yarnpkg.com/theme-ui.macro/-/theme-ui.macro-0.0.0-experimental.1.tgz#dbe621d7300d6844fa35aa893ff104001e29bf01"
-  integrity sha512-XKjWqp2jiN5fpcxupsYBCXsAT8uOeFgpP/VI54wGNMcxuq33IW7f99qp3R3h7GZNJQD1ugjnA9EqI8962JA+ew==
+theme-ui.macro@^0.0.0-experimental.2:
+  version "0.0.0-experimental.2"
+  resolved "https://registry.yarnpkg.com/theme-ui.macro/-/theme-ui.macro-0.0.0-experimental.2.tgz#92a2708eefbeb4482e02353b60c68b6863fdbadb"
+  integrity sha512-qyutnxOKjIIfMW9a4vJ8gplONfD4D64vC+ffO3pdpttxrNhdMs1gEfVYtzFjkN+i9Sw3W+AhLjpQwnmfY6CTDA==
   dependencies:
     postcss "^8.1.9"
     postcss-nested "^5.0.1"

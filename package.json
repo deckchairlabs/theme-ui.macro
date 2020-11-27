@@ -1,6 +1,6 @@
 {
   "name": "theme-ui.macro",
-  "version": "0.0.0-experimental.1",
+  "version": "0.0.0-experimental.2",
   "description": "Babel macro for transforming ThemeUI spec themes",
   "main": "dist/theme-ui.macro.cjs.js",
   "module": "dist/theme-ui.macro.esm.js",
