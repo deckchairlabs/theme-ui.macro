@@ -78,10 +78,19 @@ The config key is `themeUI`
 
 #### **`babel-plugin-macros.config.js`**
 
-```js
+```ts
 module.exports = {
   themeUI: {
-    plugins?: []
+    customProperties?: {
+      prefix?: string
+    },
+    generateStylesheet?: {
+      output: string,
+      selectors?: Record<string, string>
+    },
+    generateTSDeclaration?: {
+      output: string
+    }
   },
 }
 ```
@@ -90,16 +99,16 @@ module.exports = {
 
 ### CustomProperties
 
-Turns theme tokens into css custom property declarations and make replacements where neccesary.
+Turns theme tokens into css custom property declarations and makes replacements where neccesary.
 
 #### **`babel-plugin-macros.config.js`**
 
 ```js
-const customProperties = require('theme-ui.macro/plugins/customProperties')
-
 module.exports = {
   themeUI: {
-    plugins: [customProperties()],
+    customProperties: {
+      prefix: 'my-theme',
+    },
   },
 }
 ```
@@ -133,27 +142,27 @@ export default transformTheme({
 export default {
   styles: {
     root: {
-      '--colors-primary': 'red',
-      '--colors-secondary': 'blue',
-      '--colors-dark-primary': 'white',
-      '--space-0': '0px',
-      '--space-1': '4px',
-      '--space-2': '8px',
-      '--space-3': '16px',
+      '--my-theme-colors-primary': 'red',
+      '--my-theme-colors-secondary': 'blue',
+      '--my-theme-colors-dark-primary': 'white',
+      '--my-theme-space-0': '0px',
+      '--my-theme-space-1': '4px',
+      '--my-theme-space-2': '8px',
+      '--my-theme-space-3': '16px',
     },
   },
   colors: {
-    primary: 'var(--colors-primary)',
-    secondary: 'var(--colors-secondary)',
+    primary: 'var(--my-theme-colors-primary)',
+    secondary: 'var(--my-theme-colors-secondary)',
     dark: {
-      primary: 'var(--colors-dark-primary)',
+      primary: 'var(--my-theme-colors-dark-primary)',
     },
   },
   space: [
-    'var(--space-0)',
-    'var(--space-1)',
-    'var(--space-2)',
-    'var(--space-3)',
+    'var(--my-theme-space-0)',
+    'var(--my-theme-space-1)',
+    'var(--my-theme-space-2)',
+    'var(--my-theme-space-3)',
   ],
   buttons: {
     base: {
@@ -195,40 +204,14 @@ export default transformTheme({
 #### **`babel-plugin-macros.config.js`**
 
 ```js
-const generateStylesheet = require('theme-ui.macro/plugins/generateStylesheet')
-
 module.exports = {
   themeUI: {
-    plugins: [
-      generateStylesheet({
-        selectors: {
-          buttons: '.button',
-        },
-        output: './path/to/generated/stylesheet.css',
-      }),
-    ],
-  },
-}
-
-/**
- * If you use this plugin in addition to the CustomProperties plugin,
- * placing it after that plugin will add the custom properties
- * to your generated stylesheet.
- */
-const customProperties = require('theme-ui.macro/plugins/customProperties')
-const generateStylesheet = require('theme-ui.macro/plugins/generateStylesheet')
-
-module.exports = {
-  themeUI: {
-    plugins: [
-      customProperties(),
-      generateStylesheet({
-        selectors: {
-          buttons: '.button',
-        },
-        output: './path/to/generated/stylesheet.css',
-      }),
-    ],
+    generateStylesheet: {
+      selectors: {
+        buttons: '.button',
+      },
+      output: './path/to/generated/stylesheet.css',
+    },
   },
 }
 ```
@@ -274,15 +257,11 @@ Generate a TypeScript declaration file from the transformed theme.
 #### **`babel-plugin-macros.config.js`**
 
 ```js
-const typescriptDeclarations = require('theme-ui.macro/plugins/typescriptDeclarations')
-
 module.exports = {
   themeUI: {
-    plugins: [
-      typescriptDeclarations({
-        output: './path/to/generated/theme.d.ts',
-      }),
-    ],
+    generateTSDeclaration: {
+      output: './path/to/generated/theme.d.ts',
+    },
   },
 }
 ```
