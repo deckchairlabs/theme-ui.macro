@@ -115,7 +115,7 @@ Turns theme scales into css custom property declarations and makes replacements 
 module.exports = {
   themeUI: {
     customProperties: {
-      prefix: 'my-theme',
+      prefix: 'my-theme', // Defaults to theme-ui
     },
   },
 }
