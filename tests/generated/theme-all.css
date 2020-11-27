@@ -1,32 +1,32 @@
 :root {
-    --colors-primary: red;
-    --colors-secondary: blue;
-    --colors-black: #000;
-    --colors-dark-primary: white;
-    --colors-light-primary: black;
-    --space-0: 0px;
-    --space-1: 4px;
-    --space-2: 8px;
-    --space-3: 16px;
-    --borderWidths-0: 0px;
-    --borderWidths-1: 1px;
-    --borderWidths-2: 2px
+    --theme-ui-colors-primary: red;
+    --theme-ui-colors-secondary: blue;
+    --theme-ui-colors-black: #000;
+    --theme-ui-colors-dark-primary: white;
+    --theme-ui-colors-light-primary: black;
+    --theme-ui-space-0: 0px;
+    --theme-ui-space-1: 4px;
+    --theme-ui-space-2: 8px;
+    --theme-ui-space-3: 16px;
+    --theme-ui-borderWidths-0: 0px;
+    --theme-ui-borderWidths-1: 1px;
+    --theme-ui-borderWidths-2: 2px
 }
 .button-base {
-    padding: var(--space-3);
-    padding-left: var(--space-2);
-    padding-right: var(--space-2);
-    border-width: var(--borderWidths-1);
+    padding: var(--theme-ui-space-3);
+    padding-left: var(--theme-ui-space-2);
+    padding-right: var(--theme-ui-space-2);
+    border-width: var(--theme-ui-borderWidths-1);
 }
 @media screen and (min-width: 40em) {
     .button-base {
-        padding-left: var(--space-3);
-        padding-right: var(--space-3)
+        padding-left: var(--theme-ui-space-3);
+        padding-right: var(--theme-ui-space-3)
     }
 }
 .button-primary {
-    background-color: var(--colors-primary)
+    background-color: var(--theme-ui-colors-primary)
 }
 .layout-spacing-large {
-    margin: var(--space-3)
+    margin: var(--theme-ui-space-3)
 }

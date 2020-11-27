@@ -20,7 +20,7 @@ function getCustomPropertyIdentifier(path: string[], prefix?: string) {
 export default function CustomPropertiesPlugin(
   config?: CustomPropertiesPluginConfig
 ): Plugin {
-  const { prefix = '' } = config || {}
+  const { prefix = 'theme-ui' } = config || {}
   return (
     path: Babel.NodePath<Babel.Node>,
     theme: Theme,
