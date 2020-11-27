@@ -99,7 +99,7 @@ module.exports = {
 
 ### CustomProperties
 
-Turns theme tokens into css custom property declarations and makes replacements where neccesary.
+Turns theme scales into css custom property declarations and makes replacements where neccesary.
 
 #### **`babel-plugin-macros.config.js`**
 
