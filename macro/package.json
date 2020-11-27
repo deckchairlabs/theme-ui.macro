@@ -1,3 +1,4 @@
 {
-  "main": "dist/theme-ui.macro-macro.cjs.js"
+  "main": "../dist/theme-ui.macro.cjs.js",
+  "module": "../dist/theme-ui.macro.esm.js"
 }

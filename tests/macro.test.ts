@@ -5,6 +5,7 @@ import plugin from 'babel-plugin-macros'
 pluginTester({
   plugin,
   pluginName: 'theme-ui.macro',
+  title: 'Macro',
   snapshot: false,
   babelOptions: {
     presets: ['@babel/preset-typescript'],

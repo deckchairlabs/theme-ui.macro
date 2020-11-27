@@ -6,6 +6,7 @@ import typescriptDeclarations from '../src/plugins/typescriptDeclarations'
 pluginTester({
   plugin,
   pluginName: 'theme-ui.macro',
+  title: 'TypeScript Declaration',
   snapshot: false,
   babelOptions: {
     presets: ['@babel/preset-typescript'],

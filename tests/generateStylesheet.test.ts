@@ -6,6 +6,7 @@ import generateStylesheet from '../src/plugins/generateStylesheet'
 pluginTester({
   plugin,
   pluginName: 'theme-ui.macro',
+  title: 'Generate Stylesheet',
   snapshot: false,
   babelOptions: {
     presets: ['@babel/preset-typescript'],

@@ -6,6 +6,7 @@ import customProperties from '../src/plugins/customProperties'
 pluginTester({
   plugin,
   pluginName: 'theme-ui.macro',
+  title: 'Custom Properties',
   snapshot: false,
   babelOptions: {
     presets: ['@babel/preset-typescript'],

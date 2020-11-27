@@ -73,6 +73,8 @@ function asFunction(
   return nodePath.node
 }
 
-export default createMacro(macroHandler, {
+const themeUIMacro: (theme: object) => Theme = createMacro(macroHandler, {
   configName: 'themeUI',
 })
+
+export default themeUIMacro
