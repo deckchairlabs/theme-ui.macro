@@ -10,6 +10,7 @@ import {
   primitiveToCssValue,
 } from '../utils'
 import { Plugin, GenerateStylesheetPluginConfig } from '../types'
+import { isStringLiteral } from '@babel/types'
 
 export default function GenerateStylesheetPlugin(
   config: GenerateStylesheetPluginConfig
@@ -26,34 +27,9 @@ export default function GenerateStylesheetPlugin(
       throw new MacroError('Expected an object expression')
     }
 
-    // Find any objectProperty that looks like a custom property declaration
-    const customProperties: PostCSS.Declaration[] = []
-
-    function addCustomProperty(prop: string, value: string) {
-      customProperties.push(
-        PostCSS.decl({
-          prop,
-          value,
-        })
-      )
-    }
-
-    path.traverse({
-      ObjectProperty: {
-        enter(nodePath) {
-          if (
-            babel.types.isStringLiteral(nodePath.node.value) &&
-            babel.types.isStringLiteral(nodePath.node.key) &&
-            nodePath.node.key.value.startsWith('--')
-          ) {
-            addCustomProperty(
-              nodePath.node.key.value,
-              nodePath.node.value.value
-            )
-          }
-        },
-      },
-    })
+    const customProperties: PostCSS.Declaration[] = resolveCustomPropertyDeclarations(
+      path
+    )
 
     if (customProperties.length > 0) {
       const root = PostCSS.rule({
@@ -64,14 +40,7 @@ export default function GenerateStylesheetPlugin(
       stylesheet.append(root)
     }
 
-    const nodes = Object.entries(selectors)
-      .map(([key, selector]) => {
-        const object = theme[key as keyof Theme]
-        if (typeof object === 'object') {
-          return objectToPostCSSNode(theme, object, selector)
-        }
-      })
-      .filter(notUndefined)
+    const nodes = resolveSelectorNodes(selectors, theme)
 
     stylesheet.append(nodes)
 
@@ -83,6 +52,46 @@ export default function GenerateStylesheetPlugin(
       fs.writeFileSync(result.opts.to, processed.css)
     }
   }
+}
+
+function resolveCustomPropertyDeclarations(path: Babel.NodePath<Babel.Node>) {
+  const customProperties: PostCSS.Declaration[] = []
+
+  function addCustomProperty(prop: string, value: string) {
+    customProperties.push(
+      PostCSS.decl({
+        prop,
+        value,
+      })
+    )
+  }
+
+  path.traverse({
+    ObjectProperty: {
+      enter(nodePath) {
+        if (
+          isStringLiteral(nodePath.node.value) &&
+          isStringLiteral(nodePath.node.key) &&
+          nodePath.node.key.value.startsWith('--')
+        ) {
+          addCustomProperty(nodePath.node.key.value, nodePath.node.value.value)
+        }
+      },
+    },
+  })
+
+  return customProperties
+}
+
+function resolveSelectorNodes(selectors: Record<string, string>, theme: Theme) {
+  return Object.entries(selectors)
+    .map(([key, selector]) => {
+      const object = theme[key as keyof Theme]
+      if (typeof object === 'object') {
+        return objectToPostCSSNode(theme, object, selector)
+      }
+    })
+    .filter(notUndefined)
 }
 
 function objectToPostCSSNode(theme: Theme, object: object, selector: string) {
