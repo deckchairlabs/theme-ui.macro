@@ -13,18 +13,20 @@
     --borderWidths-2: 2px
 }
 .button-base {
-    padding: 16px;
+    padding: var(--space-3);
+    padding-left: var(--space-2);
+    padding-right: var(--space-2);
+    border-width: var(--borderWidths-1);
 }
-.button-base-paddingX {
-    0: 2px;
-    1: 3px
-}
-.button-base {
-    border-width: 1px
+@media screen and (min-width: 40em) {
+    .button-base {
+        padding-left: var(--space-3);
+        padding-right: var(--space-3)
+    }
 }
 .button-primary {
-    background-color: red
+    background-color: var(--colors-primary)
 }
 .layout-spacing-large {
-    margin: 16px
+    margin: var(--space-3)
 }

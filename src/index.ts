@@ -41,9 +41,8 @@ const macroHandler: MacroHandler = ({
 
         // Pass the transformed theme through any provided plugins
         if (evaluatedTheme.confident) {
-          const theme = evaluatedTheme.value as Theme
-
           plugins.forEach((plugin) => {
+            const theme = referencePath.parentPath.evaluate().value as Theme
             plugin(referencePath.parentPath, theme, babel)
           })
         } else if (!evaluatedTheme.confident) {
@@ -80,16 +79,16 @@ function asFunction(
 function resolvePlugins(config: MacroHandlerParams['config']) {
   const plugins: Plugin[] = []
 
+  if (config?.generateTSDeclaration) {
+    plugins.push(generateTypescriptDeclaration(config.generateTSDeclaration))
+  }
+
   if (config?.customProperties) {
     plugins.push(customProperties(config.customProperties))
   }
 
   if (config?.generateStylesheet) {
     plugins.push(generateStylesheet(config.generateStylesheet))
-  }
-
-  if (config?.generateTSDeclaration) {
-    plugins.push(generateTypescriptDeclaration(config.generateTSDeclaration))
   }
 
   return plugins

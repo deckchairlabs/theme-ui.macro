@@ -27,14 +27,12 @@ export default function GenerateStylesheetPlugin(
       throw new MacroError('Expected an object expression')
     }
 
-    const customProperties: PostCSS.Declaration[] = resolveCustomPropertyDeclarations(
-      path
-    )
+    const customProperties = resolveCustomPropertyDeclarations(path)
 
-    if (customProperties.length > 0) {
+    if (customProperties.size > 0) {
       const root = PostCSS.rule({
         selector: ':root',
-        nodes: customProperties,
+        nodes: Array.from(customProperties.values()),
       })
 
       stylesheet.append(root)
@@ -55,10 +53,11 @@ export default function GenerateStylesheetPlugin(
 }
 
 function resolveCustomPropertyDeclarations(path: Babel.NodePath<Babel.Node>) {
-  const customProperties: PostCSS.Declaration[] = []
+  const customProperties: Map<string, PostCSS.Declaration> = new Map()
 
   function addCustomProperty(prop: string, value: string) {
-    customProperties.push(
+    customProperties.set(
+      prop,
       PostCSS.decl({
         prop,
         value,
