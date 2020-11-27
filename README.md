@@ -5,17 +5,25 @@
 
 This macro is experimental and a work in progress. It aims to provide helpful functionality for developers when creating themes based on the ThemeUI theme spec.
 
+- [Install](#install)
+- [Usage](#usage)
+- [Configuration](#config)
+- [Plugins](#plugins)
+  - [Custom Properties](#plugins-custom-properties)
+  - [Generate Stylsheet](#plugins-generate-stylesheet)
+  - [Generate TypeScript Declaration](#plugins-generate-ts-declaration)
+
 ## ℹ️ About
 
 `theme-ui.macro` babel macro transformations for the [ThemeUI theme spec](https://theme-ui.com/theme-spec).
 
-## 📦 Install
+## 📦 [Install](#install)
 
 ```sh
 yarn add theme-ui.macro@experimental --dev
 ```
 
-## ⌨️ Usage
+## ⌨️ [Usage](#usage)
 
 [babel-plugin-macros](https://github.com/kentcdodds/babel-plugin-macros) must be configured in your project for the macro to do its work.
 
@@ -70,7 +78,7 @@ export default {
 }
 ```
 
-## ⚙️ Configuration
+## ⚙️ [Configuration](#config)
 
 Refer to the documentation for [babel-plugin-macros](https://github.com/kentcdodds/babel-plugin-macros/blob/master/other/docs/author.md#config) of how to specify configuration for this macro.
 
@@ -95,9 +103,9 @@ module.exports = {
 }
 ```
 
-## 🔌 Plugins
+## 🔌 [Plugins](#plugins)
 
-### CustomProperties
+### [Custom Properties](#plugins-custom-properties)
 
 Turns theme scales into css custom property declarations and makes replacements where neccesary.
 
@@ -175,7 +183,7 @@ export default {
 }
 ```
 
-### GenerateStylesheet
+### [Generate Stylesheet](#plugins-generate-stylesheet)
 
 Generate a stylesheet from the transformed theme.
 
@@ -262,7 +270,7 @@ Should result in a css file being generated like the below.
 }
 ```
 
-### TypescriptDeclaration
+### [Generate TypeScript Declaration](#plugins-generate-ts-declaration)
 
 Generate a TypeScript declaration file from the transformed theme.
 
