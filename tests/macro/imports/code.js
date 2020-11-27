@@ -1,7 +1,7 @@
 import transformTheme from '../../../macro'
 
 // default import
-import buttons from './buttons'
+import * as components from './components'
 // namespace import
 import * as typography from './typography'
 // named imports
@@ -10,7 +10,7 @@ import { colors, space } from './tokens'
 export default transformTheme({
     colors,
     space,
-    buttons,
+    ...components,
     ...typography,
     memberProperty: typography.fontWeights,
     nestedSpread: {
