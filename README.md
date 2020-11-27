@@ -1,6 +1,7 @@
 # 🧪 theme-ui.macro (Experimental)
 
 [![Babel Macro](https://img.shields.io/badge/babel--macro-%F0%9F%8E%A3-f5da55.svg?style=flat-square)](https://github.com/kentcdodds/babel-plugin-macros)
+![CI](https://github.com/deckchairlabs/theme-ui.macro/workflows/CI/badge.svg)
 
 This macro is experimental and a work in progress. It aims to provide helpful functionality for developers when creating themes based on the ThemeUI theme spec.
 
