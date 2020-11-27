@@ -10,10 +10,8 @@ This macro is experimental and a work in progress. It aims to provide helpful fu
 
 ## 📦 Install
 
-**Not yet published to the NPM registry. The following will fail.**
-
 ```sh
-yarn add theme-ui.macro --dev
+yarn add theme-ui.macro@experimental --dev
 ```
 
 ## ⌨️ Usage
