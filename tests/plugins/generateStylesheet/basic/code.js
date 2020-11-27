@@ -22,7 +22,7 @@ export default transformTheme({
     buttons: {
         base: {
             p: 3,
-            paddingX: 2,
+            paddingX: [2, 3],
         },
         primary: {
             backgroundColor: 'primary'

@@ -97,15 +97,20 @@ function resolveSelectorNodes(selectors: Record<string, string>, theme: Theme) {
 function objectToPostCSSNode(theme: Theme, object: object, selector: string) {
   const nodes: PostCSS.Node[] = Object.entries(object)
     .map(([key, value]) => {
-      switch (typeof value) {
-        case 'string':
-        case 'number':
-          const styles = css({ [key]: value })(theme)
-          return cssObjectToPostCSSDeclarations(styles)
-        case 'object':
-          const isPseudo = key.startsWith(':')
-          const separator = isPseudo ? '' : '-'
-          return objectToPostCSSNode(theme, value, `&${separator}${key}`)
+      if (Array.isArray(value)) {
+        const styles = css({ [key]: value })(theme)
+        return cssObjectToPostCSSDeclarations(styles)
+      } else {
+        switch (typeof value) {
+          case 'string':
+          case 'number':
+            const styles = css({ [key]: value })(theme)
+            return cssObjectToPostCSSDeclarations(styles)
+          case 'object':
+            const isPseudo = key.startsWith(':')
+            const separator = isPseudo ? '' : '-'
+            return objectToPostCSSNode(theme, value, `&${separator}${key}`)
+        }
       }
     })
     .filter(notUndefined)
@@ -118,16 +123,24 @@ function objectToPostCSSNode(theme: Theme, object: object, selector: string) {
 }
 
 function cssObjectToPostCSSDeclarations(css: CSSObject) {
-  const declarations: PostCSS.Declaration[] = Object.entries(css).map(
-    ([key, value]) => {
-      const prop = camelCaseToKebabCase(key)
-      const cssValue = primitiveToCssValue(value as string | number)
-      return PostCSS.decl({
-        prop,
-        value: cssValue,
-      })
-    }
-  )
+  const declarations: PostCSS.Node[] = Object.entries(css)
+    .map(([key, value]) => {
+      if (key.startsWith('@media')) {
+        return PostCSS.atRule({
+          name: 'media',
+          params: key.replace('@media', '').trim(),
+          nodes: cssObjectToPostCSSDeclarations(value as CSSObject),
+        })
+      } else {
+        const prop = camelCaseToKebabCase(key)
+        const cssValue = primitiveToCssValue(value as string | number)
+        return PostCSS.decl({
+          prop,
+          value: cssValue,
+        })
+      }
+    })
+    .filter(notUndefined)
 
   return declarations
 }
