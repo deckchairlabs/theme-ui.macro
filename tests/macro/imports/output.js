@@ -6,8 +6,11 @@ export default {
   space: [0, 4, 8, 16],
   buttons: {
     primary: {
-      backgroundColor: 'red',
-    },
+      backgroundColor: 'red'
+    }
+  },
+  test: {
+    backgroundColor: 'primary',
   },
   fonts: {
     body: 'system-ui, sans-serif',
