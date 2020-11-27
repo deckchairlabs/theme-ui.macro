@@ -6,12 +6,8 @@ import {
   SpreadElement,
 } from '@babel/types'
 import { Theme, get, scales } from '@theme-ui/css'
-import { Plugin } from '../types'
+import { Plugin, CustomPropertiesPluginConfig } from '../types'
 import { primitiveToCssValue } from '../utils'
-
-type CustomPropertiesPluginConfig = {
-  prefix?: string
-}
 
 function onlyUnique(value: any, index: number, self: any[]) {
   return self.indexOf(value) === index

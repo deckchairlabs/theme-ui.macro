@@ -1,7 +1,6 @@
 import path from 'path'
 import pluginTester from 'babel-plugin-tester'
 import plugin from 'babel-plugin-macros'
-import typescriptDeclarations from '../src/plugins/typescriptDeclarations'
 
 pluginTester({
   plugin,
@@ -14,11 +13,9 @@ pluginTester({
   },
   pluginOptions: {
     themeUI: {
-      plugins: [
-        typescriptDeclarations({
-          output: path.join(__dirname, 'generated/theme.d.ts'),
-        }),
-      ],
+      generateTSDeclaration: {
+        output: path.join(__dirname, 'generated/theme.d.ts'),
+      },
     },
   },
   fixtures: path.join(__dirname, 'plugins/typescriptDeclarations'),

@@ -9,13 +9,7 @@ import {
   notUndefined,
   primitiveToCssValue,
 } from '../utils'
-import { Plugin } from '../types'
-
-type GenerateStylesheetPluginConfig = {
-  output: string
-  selectors: Record<string, string>
-  selectorSeparator?: string
-}
+import { Plugin, GenerateStylesheetPluginConfig } from '../types'
 
 export default function GenerateStylesheetPlugin(
   config: GenerateStylesheetPluginConfig

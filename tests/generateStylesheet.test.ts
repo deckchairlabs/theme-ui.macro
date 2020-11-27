@@ -1,7 +1,6 @@
 import path from 'path'
 import pluginTester from 'babel-plugin-tester'
 import plugin from 'babel-plugin-macros'
-import generateStylesheet from '../src/plugins/generateStylesheet'
 
 pluginTester({
   plugin,
@@ -14,12 +13,10 @@ pluginTester({
   },
   pluginOptions: {
     themeUI: {
-      plugins: [
-        generateStylesheet({
-          selectors: { buttons: '.button', layout: '.layout' },
-          output: path.resolve(__dirname, 'generated/theme.css'),
-        }),
-      ],
+      generateStylesheet: {
+        selectors: { buttons: '.button', layout: '.layout' },
+        output: path.resolve(__dirname, 'generated/theme.css'),
+      },
     },
   },
   fixtures: path.join(__dirname, 'plugins/generateStylesheet'),
