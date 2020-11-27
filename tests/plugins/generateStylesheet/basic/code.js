@@ -9,7 +9,10 @@ export default transformTheme({
     colors: {
         primary: 'red',
         secondary: 'blue',
-        black: '#000'
+        black: '#000',
+        dark: {
+            primary: 'white'
+        }
     },
     space: [0, 4, 8, 16],
     layout: {

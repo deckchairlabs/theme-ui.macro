@@ -96,20 +96,15 @@ function resolveSelectorNodes(selectors: Record<string, string>, theme: Theme) {
 function objectToPostCSSNode(theme: Theme, object: object, selector: string) {
   const nodes: PostCSS.Node[] = Object.entries(object)
     .map(([key, value]) => {
-      if (Array.isArray(value)) {
+      const isObject = !Array.isArray(value) && typeof value === 'object'
+
+      if (isObject) {
+        const isPseudo = key.startsWith(':')
+        const separator = isPseudo ? '' : '-'
+        return objectToPostCSSNode(theme, value, `&${separator}${key}`)
+      } else {
         const styles = css({ [key]: value })(theme)
         return cssObjectToPostCSSDeclarations(styles)
-      } else {
-        switch (typeof value) {
-          case 'string':
-          case 'number':
-            const styles = css({ [key]: value })(theme)
-            return cssObjectToPostCSSDeclarations(styles)
-          case 'object':
-            const isPseudo = key.startsWith(':')
-            const separator = isPseudo ? '' : '-'
-            return objectToPostCSSNode(theme, value, `&${separator}${key}`)
-        }
       }
     })
     .filter(notUndefined)
