@@ -7,23 +7,23 @@ This macro is experimental and a work in progress. It aims to provide helpful fu
 
 - [Install](#install)
 - [Usage](#usage)
-- [Configuration](#config)
+- [Configuration](#configuration)
 - [Plugins](#plugins)
-  - [Custom Properties](#plugins-custom-properties)
-  - [Generate Stylsheet](#plugins-generate-stylesheet)
-  - [Generate TypeScript Declaration](#plugins-generate-ts-declaration)
+  - [Custom Properties](#custom-properties)
+  - [Generate Stylsheet](#generate-stylesheet)
+  - [Generate TypeScript Declaration](#generate-typescript-declaration)
 
-## ℹ️ About
+## About
 
 `theme-ui.macro` babel macro transformations for the [ThemeUI theme spec](https://theme-ui.com/theme-spec).
 
-## 📦 [Install](#install)
+## Install
 
 ```sh
 yarn add theme-ui.macro@experimental --dev
 ```
 
-## ⌨️ [Usage](#usage)
+## Usage
 
 [babel-plugin-macros](https://github.com/kentcdodds/babel-plugin-macros) must be configured in your project for the macro to do its work.
 
@@ -78,7 +78,7 @@ export default {
 }
 ```
 
-## ⚙️ [Configuration](#config)
+## Configuration
 
 Refer to the documentation for [babel-plugin-macros](https://github.com/kentcdodds/babel-plugin-macros/blob/master/other/docs/author.md#config) of how to specify configuration for this macro.
 
@@ -103,9 +103,9 @@ module.exports = {
 }
 ```
 
-## 🔌 [Plugins](#plugins)
+## Plugins
 
-### [Custom Properties](#plugins-custom-properties)
+### Custom Properties
 
 Turns theme scales into css custom property declarations and makes replacements where neccesary.
 
@@ -183,7 +183,7 @@ export default {
 }
 ```
 
-### [Generate Stylesheet](#plugins-generate-stylesheet)
+### Generate Stylesheet
 
 Generate a stylesheet from the transformed theme.
 
@@ -270,7 +270,7 @@ Should result in a css file being generated like the below.
 }
 ```
 
-### [Generate TypeScript Declaration](#plugins-generate-ts-declaration)
+### Generate TypeScript Declaration
 
 Generate a TypeScript declaration file from the transformed theme.
 
