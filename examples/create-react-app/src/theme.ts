@@ -1,7 +1,6 @@
 import transformTheme from 'theme-ui.macro'
 
 export default transformTheme({
-  useCustomProperties: false,
   colors: {
     background: 'white',
     text: 'black',
