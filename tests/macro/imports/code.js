@@ -12,8 +12,8 @@ export default transformTheme({
     space,
     buttons,
     ...typography,
-    asPropertyFromNamespace: typography.fontWeights,
-    nested: {
+    memberProperty: typography.fontWeights,
+    nestedSpread: {
         ...typography
     }
 })

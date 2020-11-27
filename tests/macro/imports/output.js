@@ -23,12 +23,12 @@ export default {
     body: 1.5,
     heading: 1.125,
   },
-  asPropertyFromNamespace: {
+  memberProperty: {
     body: 400,
     heading: 700,
     bold: 700,
   },
-  nested: {
+  nestedSpread: {
     fonts: {
       body: 'system-ui, sans-serif',
       heading: 'system-ui, sans-serif',
