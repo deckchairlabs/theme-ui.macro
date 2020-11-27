@@ -1,0 +1,1 @@
+This exists purely for tests, it is not published to NPM. `babel-plugin-macros` determines whether to run based on the [filename](https://github.com/kentcdodds/babel-plugin-macros/blob/master/other/docs/author.md#filename).
