@@ -251,6 +251,12 @@ Should result in a css file being generated like the below.
   padding: var(--space-2);
 }
 
+@media screen and (min-width: 40em) {
+  .button-base {
+    padding: var(--space-3);
+  }
+}
+
 .button-primary {
   background-color: var(--colors-primary);
 }
