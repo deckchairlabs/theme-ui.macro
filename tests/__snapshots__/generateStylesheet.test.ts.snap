@@ -1,0 +1,24 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`generated stylesheet matches snapshot 1`] = `
+:root {
+    --colors-primary: red
+}
+.button-base {
+    padding: 16px;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+@media screen and (min-width: 40em) {
+    .button-base {
+        padding-left: 16px;
+        padding-right: 16px
+    }
+}
+.button-primary {
+    background-color: red
+}
+.layout-spacing-large {
+    margin: 16px
+}
+`;

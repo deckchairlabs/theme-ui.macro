@@ -1,3 +1,4 @@
+import fs from 'fs'
 import path from 'path'
 import pluginTester from 'babel-plugin-tester'
 import plugin from 'babel-plugin-macros'
@@ -20,4 +21,11 @@ pluginTester({
     },
   },
   fixtures: path.join(__dirname, 'plugins/generateStylesheet'),
+})
+
+test('generated stylesheet matches snapshot', () => {
+  const content = fs.readFileSync(
+    path.resolve(__dirname, 'generated/theme.css')
+  )
+  expect(content.toString()).toMatchSnapshot()
 })

@@ -1,3 +1,4 @@
+import fs from 'fs'
 import path from 'path'
 import pluginTester from 'babel-plugin-tester'
 import plugin from 'babel-plugin-macros'
@@ -19,4 +20,11 @@ pluginTester({
     },
   },
   fixtures: path.join(__dirname, 'plugins/typescriptDeclarations'),
+})
+
+test('generated declaration file matches snapshot', () => {
+  const content = fs.readFileSync(
+    path.resolve(__dirname, 'generated/theme.d.ts')
+  )
+  expect(content.toString()).toMatchSnapshot()
 })
