@@ -1,0 +1,92 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`generated declaration file matches snapshot 1`] = `
+import { Theme } from "@theme-ui/css";
+declare module "@theme-ui/css" {
+    export interface Theme {
+        styles: {
+            root: {
+                fontSize: 1;
+            };
+        };
+        colors: {
+            primary: "red";
+            secondary: "blue";
+            black: "#000";
+            dark: {
+                primary: "white";
+            };
+            light: {
+                primary: "black";
+            };
+        };
+        space: [
+            0,
+            4,
+            8,
+            16
+        ];
+        borderWidths: [
+            0,
+            1,
+            2
+        ];
+        layout: {
+            spacing: {
+                large: {
+                    margin: 3;
+                };
+            };
+        };
+        buttons: {
+            base: {
+                p: 3;
+                paddingX: [
+                    2,
+                    3
+                ];
+                borderWidth: 1;
+            };
+            primary: {
+                backgroundColor: "primary";
+            };
+        };
+    }
+}
+
+`;
+
+exports[`generated stylesheet matches snapshot 1`] = `
+:root {
+    --colors-primary: red;
+    --colors-secondary: blue;
+    --colors-black: #000;
+    --colors-dark-primary: white;
+    --colors-light-primary: black;
+    --space-0: 0px;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 16px;
+    --borderWidths-0: 0px;
+    --borderWidths-1: 1px;
+    --borderWidths-2: 2px
+}
+.button-base {
+    padding: var(--space-3);
+    padding-left: var(--space-2);
+    padding-right: var(--space-2);
+    border-width: var(--borderWidths-1);
+}
+@media screen and (min-width: 40em) {
+    .button-base {
+        padding-left: var(--space-3);
+        padding-right: var(--space-3)
+    }
+}
+.button-primary {
+    background-color: var(--colors-primary)
+}
+.layout-spacing-large {
+    margin: var(--space-3)
+}
+`;
