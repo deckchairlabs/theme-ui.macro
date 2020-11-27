@@ -40,7 +40,7 @@ const macroHandler: MacroHandler = ({
         const evaluatedTheme = referencePath.parentPath.evaluate()
 
         // Pass the transformed theme through any provided plugins
-        if (evaluatedTheme.confident && plugins) {
+        if (evaluatedTheme.confident) {
           const theme = evaluatedTheme.value as Theme
 
           plugins.forEach((plugin) => {
