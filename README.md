@@ -192,7 +192,7 @@ export default transformTheme({
   space: [0, 4, 8, 16],
   buttons: {
     base: {
-      padding: 2,
+      padding: [2, 3],
     },
     primary: {
       backgroundColor: 'primary',
@@ -223,6 +223,12 @@ Should result in a css file being generated like the below.
 ```css
 .button-base {
   padding: 8px;
+}
+
+@media screen and (min-width: 40em) {
+  .button-base {
+    padding: 16px;
+  }
 }
 
 .button-primary {
