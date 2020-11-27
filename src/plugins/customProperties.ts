@@ -1,9 +1,15 @@
 import * as Babel from '@babel/core'
 import {
+  identifier,
   isIdentifier,
+  isObjectExpression,
   isObjectProperty,
+  isStringLiteral,
+  objectExpression,
   ObjectMember,
+  objectProperty,
   SpreadElement,
+  stringLiteral,
 } from '@babel/types'
 import { Theme, get, scales } from '@theme-ui/css'
 import { Plugin, CustomPropertiesPluginConfig } from '../types'
@@ -26,15 +32,12 @@ export default function CustomPropertiesPlugin(
     theme: Theme,
     babel: typeof Babel
   ) => {
-    const customProperties: babel.types.ObjectProperty[] = []
+    const customProperties: Babel.types.ObjectProperty[] = []
     const tokens = Object.values(scales).filter(onlyUnique)
 
     function addCustomProperty(key: string, value: string) {
       customProperties.push(
-        babel.types.objectProperty(
-          babel.types.stringLiteral(key),
-          babel.types.stringLiteral(value)
-        )
+        objectProperty(stringLiteral(key), stringLiteral(value))
       )
     }
 
@@ -42,7 +45,7 @@ export default function CustomPropertiesPlugin(
       ObjectProperty: {
         enter(nodePath) {
           if (
-            babel.types.isIdentifier(nodePath.node.key) &&
+            isIdentifier(nodePath.node.key) &&
             //@ts-ignore
             tokens.includes(nodePath.node.key.name)
           ) {
@@ -50,8 +53,8 @@ export default function CustomPropertiesPlugin(
               ObjectProperty: {
                 enter(nodePath) {
                   if (
-                    babel.types.isIdentifier(nodePath.node.key) &&
-                    babel.types.isStringLiteral(nodePath.node.value)
+                    isIdentifier(nodePath.node.key) &&
+                    isStringLiteral(nodePath.node.value)
                   ) {
                     const propertyPath = [
                       ...getPropertyPath(nodePath),
@@ -69,9 +72,7 @@ export default function CustomPropertiesPlugin(
                       nodePath.node.value.value
                     )
 
-                    nodePath.node.value = babel.types.stringLiteral(
-                      propertyValue
-                    )
+                    nodePath.node.value = stringLiteral(propertyValue)
                   }
                 },
               },
@@ -106,14 +107,14 @@ export default function CustomPropertiesPlugin(
       },
     })
 
-    if (babel.types.isObjectExpression(path.node)) {
+    if (isObjectExpression(path.node)) {
       const existingStylesProperty = findObjectPropertyByName(
         'styles',
         path.node.properties
       )
       if (
-        babel.types.isObjectProperty(existingStylesProperty) &&
-        babel.types.isObjectExpression(existingStylesProperty.value)
+        isObjectProperty(existingStylesProperty) &&
+        isObjectExpression(existingStylesProperty.value)
       ) {
         const existingRootProperty = findObjectPropertyByName(
           'root',
@@ -121,33 +122,36 @@ export default function CustomPropertiesPlugin(
         )
 
         if (
-          babel.types.isObjectProperty(existingRootProperty) &&
-          babel.types.isObjectExpression(existingRootProperty.value)
+          isObjectProperty(existingRootProperty) &&
+          isObjectExpression(existingRootProperty.value)
         ) {
           existingRootProperty.value.properties.unshift(...customProperties)
         } else {
           existingStylesProperty.value.properties.unshift(
-            babel.types.objectProperty(
-              babel.types.identifier('root'),
-              babel.types.objectExpression(customProperties)
+            objectProperty(
+              identifier('root'),
+              objectExpression(customProperties)
             )
           )
         }
       } else {
         path.node.properties.unshift(
-          babel.types.objectProperty(
-            babel.types.identifier('styles'),
-            babel.types.objectExpression([
-              babel.types.objectProperty(
-                babel.types.identifier('root'),
-                babel.types.objectExpression(customProperties)
-              ),
-            ])
-          )
+          createStylesRootObjectProperty(customProperties)
         )
       }
     }
   }
+}
+
+function createStylesRootObjectProperty(
+  customProperties: Babel.types.ObjectProperty[]
+) {
+  return objectProperty(
+    identifier('styles'),
+    objectExpression([
+      objectProperty(identifier('root'), objectExpression(customProperties)),
+    ])
+  )
 }
 
 function findObjectPropertyByName(
@@ -171,11 +175,11 @@ function getPropertyPath(
 
   let parentPath = nodePath.parentPath
   while (
-    Babel.types.isObjectExpression(parentPath.node) ||
-    Babel.types.isObjectProperty(parentPath.node)
+    isObjectExpression(parentPath.node) ||
+    isObjectProperty(parentPath.node)
   ) {
-    if (Babel.types.isObjectProperty(parentPath.node)) {
-      if (Babel.types.isIdentifier(parentPath.node.key)) {
+    if (isObjectProperty(parentPath.node)) {
+      if (isIdentifier(parentPath.node.key)) {
         propertyPath.push(parentPath.node.key.name)
       }
     }

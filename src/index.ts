@@ -36,16 +36,25 @@ const macroHandler: MacroHandler = ({
 
       if (transformedTheme) {
         // Replace the path to the macro call expression with the transformedTheme object expression
-        referencePath.parentPath.replaceWith(transformedTheme)
+        referencePath.parentPath.replaceWith(transformedTheme.node)
         const evaluatedTheme = referencePath.parentPath.evaluate()
 
-        // Pass the transformed theme through any provided plugins
+        /**
+         * If we can confidently evauluate the transformed theme object,
+         * pass it through all configured plugins.
+         *
+         * We re-evaulate the theme before each plugin pass, as plugins may
+         * modify it.
+         */
         if (evaluatedTheme.confident) {
           plugins.forEach((plugin) => {
             const theme = referencePath.parentPath.evaluate().value as Theme
+            /**
+             * TODO: Should check for confidence here, as plugins can modify the theme. Throw error if not confident
+             */
             plugin(referencePath.parentPath, theme, babel)
           })
-        } else if (!evaluatedTheme.confident) {
+        } else {
           throw new MacroError(
             'Could not confidently evaluate the transformed theme.'
           )
@@ -65,6 +74,8 @@ function asFunction(
   state: Babel.PluginPass
 ) {
   resolveBindings(babel, state)
+
+  // We evaluate the theme after resolving all import and local variable bindings
   const evaluatedTheme = nodePath.evaluate().value
 
   nodePath.traverse({
@@ -73,7 +84,7 @@ function asFunction(
     },
   })
 
-  return nodePath.node
+  return nodePath
 }
 
 function resolvePlugins(config: MacroHandlerParams['config']) {
