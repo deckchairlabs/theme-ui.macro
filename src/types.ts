@@ -6,7 +6,7 @@ export type MacroHandlerParams = Omit<MacroParams, 'config'> & {
   config?: {
     customProperties?: CustomPropertiesPluginConfig
     generateStylesheet?: GenerateStylesheetPluginConfig
-    generateTSDeclaration?: GenerateTypescriptDeclarationsPluginConfig
+    generateTypeScriptDeclaration?: GenerateTypescriptDeclarationPluginConfig
   }
 }
 
@@ -26,6 +26,6 @@ export type GenerateStylesheetPluginConfig = {
   selectorSeparator?: string
 }
 
-export type GenerateTypescriptDeclarationsPluginConfig = {
+export type GenerateTypescriptDeclarationPluginConfig = {
   output: string
 }
