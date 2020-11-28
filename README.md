@@ -96,7 +96,7 @@ module.exports = {
       output: string,
       selectors?: Record<string, string>
     },
-    generateTSDeclaration?: {
+    generateTypeScriptDeclaration?: {
       output: string
     }
   },
@@ -279,7 +279,7 @@ Generate a TypeScript declaration file from the transformed theme.
 ```js
 module.exports = {
   themeUI: {
-    generateTSDeclaration: {
+    generateTypeScriptDeclaration: {
       output: './path/to/generated/theme.d.ts',
     },
   },
