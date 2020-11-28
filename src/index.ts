@@ -32,7 +32,7 @@ const macroHandler: MacroHandler = ({
         )
       }
 
-      const transformedTheme = asFunction(callArguments[0], state)
+      const transformedTheme = asFunction(callArguments[0], babel, state)
 
       if (transformedTheme) {
         // Replace the path to the macro call expression with the transformedTheme object expression
@@ -70,9 +70,10 @@ const macroHandler: MacroHandler = ({
 
 function asFunction(
   nodePath: NodePath<ObjectExpression>,
+  babel: typeof Babel,
   state: Babel.PluginPass
 ) {
-  resolveBindings(state)
+  resolveBindings(babel, state)
 
   // We evaluate the theme after resolving all import and local variable bindings
   const evaluatedTheme = nodePath.evaluate().value

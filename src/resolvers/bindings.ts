@@ -19,8 +19,11 @@ import {
   identifier,
 } from '@babel/types'
 
-export default function resolveBindings(state: Babel.PluginPass) {
-  resolveImportReferences(state.file.ast, state.filename)
+export default function resolveReferences(
+  babel: typeof Babel,
+  state: Babel.PluginPass
+) {
+  resolveImportReferences(babel, state.file.ast, state.filename)
   resolveLocalVariableReferences(state.file.ast, state)
 }
 
@@ -45,6 +48,7 @@ export function resolveLocalVariableReferences(
 }
 
 export function resolveImportReferences(
+  babel: typeof Babel,
   ast: Babel.Node | null,
   filename: string
 ) {
@@ -54,7 +58,7 @@ export function resolveImportReferences(
         const source = path.node.source.value
 
         const filepath = resolveImportFilepath(source, dirname(filename))
-        const importedAst = parseAstFromFile(filepath)
+        const importedAst = parseAstFromFile(babel, filepath)
         const moduleExports = resolveModuleExports(importedAst)
 
         // resolveImports(importedAst, babel, source)
@@ -183,9 +187,9 @@ function resolveImportFilepath(source: string, path: string) {
   })
 }
 
-function parseAstFromFile(filepath: string) {
+function parseAstFromFile(babel: typeof Babel, filepath: string) {
   const buffer = fs.readFileSync(filepath)
-  const ast = Babel.parseSync(buffer.toString(), {
+  const ast = babel.parseSync(buffer.toString(), {
     filename: filepath,
   })
 
