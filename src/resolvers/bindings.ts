@@ -1,7 +1,7 @@
 import fs from 'fs'
 import { dirname } from 'path'
 import * as Babel from '@babel/core'
-import traverse, { Binding } from '@babel/traverse'
+import traverse from '@babel/traverse'
 import {
   isIdentifier,
   isExportNamedDeclaration,
@@ -14,19 +14,18 @@ import {
   ImportNamespaceSpecifier,
   isObjectExpression,
   isObjectProperty,
+  objectExpression,
+  objectProperty,
+  identifier,
 } from '@babel/types'
 
-export default function resolveBindings(
-  babel: typeof Babel,
-  state: Babel.PluginPass
-) {
-  resolveImportBindings(state.file.ast, babel, state)
-  resolveLocalVariableDeclaratorBindings(state.file.ast, babel, state)
+export default function resolveBindings(state: Babel.PluginPass) {
+  resolveImportReferences(state.file.ast, state.filename)
+  resolveLocalVariableReferences(state.file.ast, state)
 }
 
-export function resolveLocalVariableDeclaratorBindings(
-  ast: Babel.types.Program | Babel.types.File | null,
-  babel: typeof Babel,
+export function resolveLocalVariableReferences(
+  ast: Babel.Node | null,
   state: Babel.PluginPass
 ) {
   const bindings = state.file.scope.getAllBindings()
@@ -34,10 +33,10 @@ export function resolveLocalVariableDeclaratorBindings(
   Object.keys(bindings).forEach((key) => {
     const binding = state.file.scope.getBinding(key)
     if (binding) {
-      binding.referencePaths.forEach((reference) => {
+      binding.referencePaths.forEach((referencePath) => {
         switch (binding.path.node?.type) {
           case 'VariableDeclarator':
-            resolveVariableDeclaratorBinding(binding, reference)
+            resolveVariableDeclaratorReference(binding.path, referencePath)
             break
         }
       })
@@ -45,112 +44,38 @@ export function resolveLocalVariableDeclaratorBindings(
   })
 }
 
-export function resolveImportBindings(
-  ast: Babel.types.Program | Babel.types.File | null,
-  babel: typeof Babel,
-  state: Babel.PluginPass
+export function resolveImportReferences(
+  ast: Babel.Node | null,
+  filename: string
 ) {
-  const filename = state.filename
-
   traverse(ast, {
     ImportDeclaration: {
       enter(path) {
         const source = path.node.source.value
 
         const filepath = resolveImportFilepath(source, dirname(filename))
-        const importedAst = parseAstFromFile(filepath, babel)
-        const moduleExports = getExportedExpressions(importedAst)
+        const importedAst = parseAstFromFile(filepath)
+        const moduleExports = resolveModuleExports(importedAst)
+
+        // resolveImports(importedAst, babel, source)
 
         if (moduleExports.size > 0) {
           path.node.specifiers.forEach((specifier) => {
-            const binding = state.file.scope.getBinding(specifier.local.name)
-
-            let resolvedImport: Babel.types.Expression | undefined
-
+            const binding = path.scope.getBinding(specifier.local.name)
             if (binding) {
-              switch (specifier.type) {
-                case 'ImportNamespaceSpecifier':
-                  const namespaceExports = Array.from(moduleExports.entries())
-                  const objectProperties: Babel.types.ObjectProperty[] = namespaceExports.map(
-                    ([key, value]) => {
-                      return babel.types.objectProperty(
-                        babel.types.identifier(key),
-                        value
-                      )
-                    }
-                  )
-
-                  resolvedImport = babel.types.objectExpression(
-                    objectProperties
-                  )
-                  break
-                case 'ImportDefaultSpecifier':
-                  resolvedImport = moduleExports.get('default')
-                  break
-                case 'ImportSpecifier':
-                  resolvedImport = moduleExports.get(specifier.local.name)
-                  break
-              }
+              const resolvedImport = resolveImport(specifier, moduleExports)
 
               if (resolvedImport) {
                 binding.referencePaths.forEach((referencePath) => {
                   if (
-                    babel.types.isIdentifier(referencePath.node) &&
-                    babel.types.isExpression(resolvedImport)
+                    isIdentifier(referencePath.node) &&
+                    isExpression(resolvedImport)
                   ) {
-                    switch (referencePath.parentPath.node.type) {
-                      case 'MemberExpression':
-                        if (
-                          babel.types.isIdentifier(
-                            referencePath.parentPath.node.property
-                          ) &&
-                          babel.types.isObjectExpression(resolvedImport)
-                        ) {
-                          const propertyName =
-                            referencePath.parentPath.node.property.name
-                          const memberExpressionProperty = resolvedImport.properties.find(
-                            (property) => {
-                              return (
-                                babel.types.isObjectProperty(property) &&
-                                babel.types.isIdentifier(property.key) &&
-                                property.key.name === propertyName
-                              )
-                            }
-                          )
-                          if (
-                            babel.types.isObjectProperty(
-                              memberExpressionProperty
-                            )
-                          ) {
-                            referencePath.parentPath.replaceWith(
-                              memberExpressionProperty.value
-                            )
-                          }
-                        }
-                        break
-                      case 'ObjectProperty':
-                        resolveImportSpecifier(
-                          specifier,
-                          resolvedImport,
-                          referencePath.parentPath
-                        )
-
-                        break
-
-                      case 'SpreadElement':
-                        if (
-                          typeof referencePath.parentPath.key === 'number' &&
-                          babel.types.isObjectExpression(
-                            referencePath.parentPath.parentPath.node
-                          ) &&
-                          babel.types.isObjectExpression(resolvedImport)
-                        ) {
-                          referencePath.parentPath.replaceWithMultiple(
-                            resolvedImport.properties
-                          )
-                        }
-                        break
-                    }
+                    replaceWithResolvedImport(
+                      specifier,
+                      referencePath.parentPath,
+                      resolvedImport
+                    )
                   }
                 })
               }
@@ -164,33 +89,92 @@ export function resolveImportBindings(
   })
 }
 
-export function resolveImportSpecifier(
+export function replaceWithResolvedImport(
+  specifier:
+    | Babel.types.ImportSpecifier
+    | Babel.types.ImportDefaultSpecifier
+    | Babel.types.ImportNamespaceSpecifier,
+  nodePath: Babel.NodePath<Babel.Node>,
+  resolvedImport: Babel.types.Expression
+) {
+  switch (nodePath.node.type) {
+    case 'MemberExpression':
+      if (
+        isIdentifier(nodePath.node.property) &&
+        isObjectExpression(resolvedImport)
+      ) {
+        const propertyName = nodePath.node.property.name
+        const memberExpressionProperty = resolvedImport.properties.find(
+          (property) => {
+            return (
+              isObjectProperty(property) &&
+              isIdentifier(property.key) &&
+              property.key.name === propertyName
+            )
+          }
+        )
+        if (isObjectProperty(memberExpressionProperty)) {
+          nodePath.replaceWith(memberExpressionProperty.value)
+        }
+      }
+      break
+    case 'ObjectProperty':
+      if (specifier.type === 'ImportDefaultSpecifier') {
+        if (isObjectExpression(resolvedImport)) {
+          nodePath.replaceWithMultiple(resolvedImport.properties)
+        } else {
+          nodePath.replaceWith(resolvedImport)
+        }
+      } else if (isObjectProperty(nodePath.node)) {
+        nodePath.node.value = resolvedImport
+      }
+
+      break
+
+    case 'SpreadElement':
+      if (
+        typeof nodePath.key === 'number' &&
+        isObjectExpression(nodePath.parentPath.node) &&
+        isObjectExpression(resolvedImport)
+      ) {
+        nodePath.replaceWithMultiple(resolvedImport.properties)
+      }
+      break
+  }
+}
+
+export function resolveImport(
   specifier:
     | ImportSpecifier
     | ImportDefaultSpecifier
     | ImportNamespaceSpecifier,
-  expression: Babel.types.Expression,
-  path: Babel.NodePath<Babel.Node>
+  moduleExports: Map<string, Babel.types.Expression>
 ) {
-  if (specifier.type === 'ImportDefaultSpecifier') {
-    if (isObjectExpression(expression)) {
-      path.replaceWithMultiple(expression.properties)
-    } else {
-      path.replaceWith(expression)
-    }
-  } else if (isObjectProperty(path.node)) {
-    path.node.value = expression
+  switch (specifier.type) {
+    case 'ImportNamespaceSpecifier':
+      const namespaceExports = Array.from(moduleExports.entries())
+      const objectProperties: Babel.types.ObjectProperty[] = namespaceExports.map(
+        ([key, value]) => {
+          return objectProperty(identifier(key), value)
+        }
+      )
+
+      return objectExpression(objectProperties)
+    case 'ImportDefaultSpecifier':
+      return moduleExports.get('default')
+    case 'ImportSpecifier':
+      return moduleExports.get(specifier.local.name)
   }
 }
 
-export function resolveVariableDeclaratorBinding(
-  binding: Binding,
-  reference: Babel.NodePath<Babel.Node>
+export function resolveVariableDeclaratorReference(
+  nodePath: Babel.NodePath<Babel.Node>,
+  referencePath: Babel.NodePath<Babel.Node>
 ) {
-  if (isVariableDeclarator(binding.path.node) && binding.path.node.init) {
-    reference.replaceWith(binding.path.node.init)
+  if (isVariableDeclarator(nodePath.node) && nodePath.node.init) {
+    referencePath.replaceWith(nodePath.node.init)
   }
-  binding.path.remove()
+  nodePath.remove()
 }
 
 function resolveImportFilepath(source: string, path: string) {
@@ -199,25 +183,21 @@ function resolveImportFilepath(source: string, path: string) {
   })
 }
 
-function parseAstFromFile(filepath: string, babel: typeof Babel) {
+function parseAstFromFile(filepath: string) {
   const buffer = fs.readFileSync(filepath)
-  const ast = babel.parseSync(buffer.toString(), {
+  const ast = Babel.parseSync(buffer.toString(), {
     filename: filepath,
   })
 
   return ast
 }
 
-function getExportedExpressions(
-  ast: Babel.types.Program | Babel.types.File | null
-) {
+function resolveModuleExports(ast: Babel.Node | null) {
   const moduleExports: Map<string, Babel.types.Expression> = new Map()
 
-  // Extract all the export declarations from the AST
   traverse(ast, {
     ExportDeclaration: {
       enter(exportDeclaration) {
-        // Handle default exports
         if (
           isExportDefaultDeclaration(exportDeclaration.node) &&
           isExpression(exportDeclaration.node.declaration)
