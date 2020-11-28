@@ -27,6 +27,7 @@ export default function CustomPropertiesPlugin(
   config?: CustomPropertiesPluginConfig
 ): Plugin {
   const { prefix = 'theme-ui' } = config || {}
+
   return (
     path: Babel.NodePath<Babel.Node>,
     theme: Theme,
@@ -128,8 +129,8 @@ export default function CustomPropertiesPlugin(
           existingRootProperty.value.properties.unshift(...customProperties)
         } else {
           existingStylesProperty.value.properties.unshift(
-            objectProperty(
-              identifier('root'),
+            createObjectExpressionObjectProperty(
+              'root',
               objectExpression(customProperties)
             )
           )
@@ -146,12 +147,22 @@ export default function CustomPropertiesPlugin(
 function createStylesRootObjectProperty(
   customProperties: Babel.types.ObjectProperty[]
 ) {
-  return objectProperty(
-    identifier('styles'),
+  return createObjectExpressionObjectProperty(
+    'styles',
     objectExpression([
-      objectProperty(identifier('root'), objectExpression(customProperties)),
+      createObjectExpressionObjectProperty(
+        'root',
+        objectExpression(customProperties)
+      ),
     ])
   )
+}
+
+function createObjectExpressionObjectProperty(
+  name: string,
+  expression: Babel.types.ObjectExpression
+) {
+  return objectProperty(identifier(name), expression)
 }
 
 function findObjectPropertyByName(
