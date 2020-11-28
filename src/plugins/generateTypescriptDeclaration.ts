@@ -38,25 +38,6 @@ export default function GenerateTypescriptDeclarationPlugin(
 function createModuleDeclaration(theme: Theme) {
   const declaredModuleName = '@theme-ui/css'
 
-  /**
-   * We create an import node so we opt-out of "ambient" mode for this declaration
-   */
-  const importDeclaration = ts.factory.createImportDeclaration(
-    undefined,
-    undefined,
-    ts.factory.createImportClause(
-      false,
-      undefined,
-      ts.factory.createNamedImports([
-        ts.factory.createImportSpecifier(
-          undefined,
-          ts.factory.createIdentifier('Theme')
-        ),
-      ])
-    ),
-    createStringLiteral(declaredModuleName)
-  )
-
   const interfaceMembers: ts.TypeElement[] = Object.entries(theme)
     .map(([key, value]) =>
       createPropertySignature(key, createLiteralTypeNodes(value))
@@ -81,7 +62,17 @@ function createModuleDeclaration(theme: Theme) {
     moduleBlock
   )
 
-  return ts.factory.createNodeArray([importDeclaration, moduleDeclaration])
+  /**
+   * We create an export node so we opt-out of "ambient" mode for this declaration
+   */
+  const exportDeclaration = ts.factory.createExportDeclaration(
+    undefined,
+    undefined,
+    false,
+    undefined
+  )
+
+  return ts.factory.createNodeArray([moduleDeclaration, exportDeclaration])
 }
 
 function createTupleTypeNodeFromArray(array: Array<any>) {
