@@ -1,3 +1,4 @@
+import path from 'path'
 import { createMacro, MacroHandler, MacroError } from 'babel-plugin-macros'
 import * as Babel from '@babel/core'
 import { NodePath } from '@babel/traverse'
@@ -52,7 +53,12 @@ const macroHandler: MacroHandler = ({
             /**
              * TODO: Should check for confidence here, as plugins can modify the theme. Throw error if not confident
              */
-            plugin(referencePath.parentPath, theme, babel)
+            plugin(
+              referencePath.parentPath,
+              theme,
+              babel,
+              path.relative(process.cwd(), state.filename)
+            )
           })
         } else {
           throw new MacroError(
@@ -90,8 +96,10 @@ function asFunction(
 function resolvePlugins(config: MacroHandlerParams['config']) {
   const plugins: Plugin[] = []
 
-  if (config?.generateTSDeclaration) {
-    plugins.push(generateTypescriptDeclaration(config.generateTSDeclaration))
+  if (config?.generateTypeScriptDeclaration) {
+    plugins.push(
+      generateTypescriptDeclaration(config.generateTypeScriptDeclaration)
+    )
   }
 
   if (config?.customProperties) {

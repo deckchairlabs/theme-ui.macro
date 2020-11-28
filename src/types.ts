@@ -13,7 +13,8 @@ export type MacroHandlerParams = Omit<MacroParams, 'config'> & {
 export type Plugin = (
   nodePath: Babel.NodePath<Babel.Node>,
   theme: Theme,
-  babel: typeof Babel
+  babel: typeof Babel,
+  relativeFilepath: string
 ) => void
 
 export type CustomPropertiesPluginConfig = {

@@ -14,7 +14,7 @@ pluginTester({
   },
   pluginOptions: {
     themeUI: {
-      generateTSDeclaration: {
+      generateTypeScriptDeclaration: {
         output: path.join(__dirname, 'generated/theme.d.ts'),
       },
     },
