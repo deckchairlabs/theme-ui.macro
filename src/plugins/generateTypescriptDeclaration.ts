@@ -2,15 +2,11 @@ import * as fs from 'fs'
 import * as Babel from '@babel/core'
 import { Theme } from '@theme-ui/css'
 import * as ts from 'typescript'
-import { Plugin } from '../types'
+import { Plugin, GenerateTypescriptDeclarationPluginConfig } from '../types'
 import { notUndefined } from '../utils'
 
-type TypescriptDeclarationsPluginConfig = {
-  output: string
-}
-
-export default function TypescriptDeclarationsPlugin(
-  config: TypescriptDeclarationsPluginConfig
+export default function GenerateTypescriptDeclarationPlugin(
+  config: GenerateTypescriptDeclarationPluginConfig
 ): Plugin {
   return (
     path: Babel.NodePath<Babel.Node>,
@@ -40,25 +36,11 @@ export default function TypescriptDeclarationsPlugin(
 }
 
 function createModuleDeclaration(theme: Theme) {
-  const interfaceMembers: ts.TypeElement[] = Object.entries(theme)
-    .map(([key, value]) => {
-      let typeNode = createLiteralTypeNodes(value)
+  const declaredModuleName = '@theme-ui/css'
 
-      return createPropertySignature(key, typeNode)
-    })
-    .filter(notUndefined)
-
-  const moduleBlock = ts.factory.createModuleBlock([
-    ts.factory.createInterfaceDeclaration(
-      undefined,
-      [createExportToken()],
-      ts.factory.createIdentifier('Theme'),
-      undefined,
-      undefined,
-      interfaceMembers
-    ),
-  ])
-
+  /**
+   * We create an import node so we opt-out of "ambient" mode for this declaration
+   */
   const importDeclaration = ts.factory.createImportDeclaration(
     undefined,
     undefined,
@@ -72,41 +54,56 @@ function createModuleDeclaration(theme: Theme) {
         ),
       ])
     ),
-    createStringLiteral('@theme-ui/css')
+    createStringLiteral(declaredModuleName)
   )
+
+  const interfaceMembers: ts.TypeElement[] = Object.entries(theme)
+    .map(([key, value]) =>
+      createPropertySignature(key, createLiteralTypeNodes(value))
+    )
+    .filter(notUndefined)
+
+  const moduleBlock = ts.factory.createModuleBlock([
+    ts.factory.createInterfaceDeclaration(
+      undefined,
+      [createExportToken()],
+      createIdentifier('Theme'),
+      undefined,
+      undefined,
+      interfaceMembers
+    ),
+  ])
 
   const moduleDeclaration = ts.factory.createModuleDeclaration(
     undefined,
-    [ts.factory.createToken(ts.SyntaxKind.DeclareKeyword)],
-    createStringLiteral('@theme-ui/css'),
+    [createDeclareToken()],
+    createStringLiteral(declaredModuleName),
     moduleBlock
   )
 
   return ts.factory.createNodeArray([importDeclaration, moduleDeclaration])
 }
 
-function createExportToken() {
-  return ts.factory.createToken(ts.SyntaxKind.ExportKeyword)
-}
-
 function createTupleTypeNodeFromArray(array: Array<any>) {
   const elements = array
-    .map((element) => {
-      switch (typeof element) {
-        case 'boolean':
-          return element ? ts.factory.createTrue() : ts.factory.createFalse()
-        case 'string':
-          return createStringLiteral(element)
-        case 'number':
-          return ts.factory.createNumericLiteral(element)
-        case 'bigint':
-          return ts.factory.createBigIntLiteral(String(element))
-      }
-    })
+    .map(createLiteralFromPrimitive)
     .filter(notUndefined)
     .map((literal) => ts.factory.createLiteralTypeNode(literal))
 
   return ts.factory.createTupleTypeNode(elements)
+}
+
+function createLiteralFromPrimitive(primitive: any) {
+  switch (typeof primitive) {
+    case 'boolean':
+      return primitive ? ts.factory.createTrue() : ts.factory.createFalse()
+    case 'string':
+      return createStringLiteral(primitive)
+    case 'number':
+      return ts.factory.createNumericLiteral(primitive)
+    case 'bigint':
+      return ts.factory.createBigIntLiteral(String(primitive))
+  }
 }
 
 function createLiteralTypeNodes(object: object | Array<any>) {
@@ -121,20 +118,13 @@ function createLiteralTypeNodes(object: object | Array<any>) {
       if (Array.isArray(value)) {
         typeNode = createTupleTypeNodeFromArray(value)
       } else {
-        switch (typeof value) {
-          case 'string':
-            typeNode = ts.factory.createLiteralTypeNode(
-              createStringLiteral(value)
-            )
-            break
-          case 'number':
-            typeNode = ts.factory.createLiteralTypeNode(
-              ts.factory.createNumericLiteral(value)
-            )
-            break
-          case 'object':
-            typeNode = createLiteralTypeNodes(value)
-            break
+        if (typeof value === 'object') {
+          typeNode = createLiteralTypeNodes(value)
+        } else {
+          const literal = createLiteralFromPrimitive(value)
+          if (literal) {
+            typeNode = ts.factory.createLiteralTypeNode(literal)
+          }
         }
       }
 
@@ -153,13 +143,27 @@ function createPropertySignature(
   readonly?: boolean
 ) {
   return ts.factory.createPropertySignature(
-    readonly
-      ? [ts.factory.createToken(ts.SyntaxKind.ReadonlyKeyword)]
-      : undefined,
-    ts.factory.createIdentifier(identifier),
+    readonly ? [createReadonlyToken()] : undefined,
+    createIdentifier(identifier),
     undefined,
     typeNode
   )
+}
+
+function createExportToken() {
+  return ts.factory.createToken(ts.SyntaxKind.ExportKeyword)
+}
+
+function createDeclareToken() {
+  return ts.factory.createToken(ts.SyntaxKind.DeclareKeyword)
+}
+
+function createReadonlyToken() {
+  return ts.factory.createToken(ts.SyntaxKind.ReadonlyKeyword)
+}
+
+function createIdentifier(value: string) {
+  return ts.factory.createIdentifier(value)
 }
 
 function createStringLiteral(value: string) {
