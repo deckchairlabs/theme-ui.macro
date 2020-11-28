@@ -22,4 +22,4 @@ declare module "@theme-ui/css" {
         };
     }
 }
-export *;
+export {};

@@ -1,7 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`generated declaration file matches snapshot 1`] = `
-import { Theme } from "@theme-ui/css";
 declare module "@theme-ui/css" {
     export interface Theme {
         styles: {
@@ -53,6 +52,7 @@ declare module "@theme-ui/css" {
         };
     }
 }
+export {};
 
 `;
 

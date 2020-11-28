@@ -69,6 +69,7 @@ function createModuleDeclaration(theme: Theme) {
     undefined,
     undefined,
     false,
+    ts.factory.createNamedExports([]),
     undefined
   )
 
