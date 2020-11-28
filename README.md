@@ -313,7 +313,6 @@ Should result in a TypeScript declaration file being generated like the below.
 #### **`./path/to/generated/theme.d.ts`**
 
 ```ts
-import { Theme } from '@theme-ui/css'
 declare module '@theme-ui/css' {
   export interface Theme {
     colors: {
@@ -331,4 +330,5 @@ declare module '@theme-ui/css' {
     }
   }
 }
+export {}
 ```
