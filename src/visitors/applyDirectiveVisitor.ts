@@ -22,12 +22,12 @@ export default function applyDirectiveVisitor(theme: Theme) {
         isStringLiteral(property.value) &&
         isObjectExpression(path.parentPath.node)
       ) {
-        const applyValue:
+        const themeValue:
           | Record<string, string | number | string[] | number[]>
           | undefined = get(theme, property.value.value)
 
-        if (applyValue && typeof path.key === 'number') {
-          const properties = objectToObjectPropertyExpressions(applyValue)
+        if (themeValue && typeof path.key === 'number') {
+          const properties = objectToObjectPropertyExpressions(themeValue)
 
           // Add the properties from @apply at the index of the current @apply property
           path.parentPath.node.properties.splice(path.key, 0, ...properties)
